@@ -1,0 +1,12 @@
+#include "timer.idl"
+
+interface timer_monitor
+{
+  oneway void on_new_timer(in timer_observer observer);
+};
+
+interface monitorable_timer: timer
+{
+  void set_monitor(in timer_monitor monitor);
+  void reset_monitor();
+};

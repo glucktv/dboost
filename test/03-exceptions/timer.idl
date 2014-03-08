@@ -1,0 +1,14 @@
+interface timer_observer
+{
+  oneway void on_timeout();
+};
+
+exception wrong_timeout_exception {};
+
+interface timer
+{
+  /* returns -1 if some error happened */
+  int add_timer(in int timeout_ms, in timer_observer observer) raises (wrong_timeout_exception);
+  void remove_timer(in timer_observer observer);
+};
+
