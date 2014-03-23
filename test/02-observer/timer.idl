@@ -5,7 +5,7 @@ interface timer_observer
 
 interface timer
 {
-  /* returns -1 if some error happened */
+  // returns -1 if some error happened
   long add_timer(in long timeout_ms, in timer_observer observer);
   void remove_timer(in timer_observer observer);
 };
