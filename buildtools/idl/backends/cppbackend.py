@@ -240,10 +240,10 @@ virtual @type@ @ids@(const @type@);""", type=type, ids=ids)
             p.paramType().accept(self)
             type = self.__result_type
             if type != 'void':
-                if type in self.ttsMap:
-                    paraml.append(inout + ' ' + type + ' &' + p.identifier())
+                if type in self.ttsMap.values():
+                    paraml.append(inout + ' ' + type + '& ' + p.identifier())
                 else:
-                    paraml.append(inout + ' ' + type + ' *' + p.identifier())
+                    paraml.append(inout + ' ' + type + '* ' + p.identifier())
             else:
                 paraml.append(inout + ' ' + type + ' ' + p.identifier())
 
