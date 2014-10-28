@@ -47,7 +47,8 @@ class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
     def visitModule(self, node):
         self.st.out("""\
-namespace @id@ {""", id = node.identifier())
+namespace @id@
+{""", id = node.identifier())
 
         self.st.inc_indent()
 
@@ -70,7 +71,10 @@ namespace @id@ {""", id = node.identifier())
             inherits = ""
         
         self.st.out("""\
-class @id@ @inherits@{""",
+class @id@ @inherits@
+{
+public:
+  virtual ~@id@() {}""",
                     id = node.identifier(), inherits=inherits)
 
         self.st.inc_indent()
@@ -138,7 +142,8 @@ typedef @type@ @decls@;""",
 
     def visitStruct(self, node):
         self.st.out("""\
-struct @id@ {""",
+struct @id@ 
+{""",
                id = node.identifier())
 
         for m in node.members():
@@ -170,7 +175,8 @@ struct @id@;""", id = node.identifier())
 
     def visitException(self, node):
         self.st.out("""\
-class @id@ {""",
+class @id@
+{""",
                id = node.identifier())
 
         for m in node.members():
@@ -261,7 +267,7 @@ virtual @type@ @ids@(const @type@);""", type=type, ids=ids)
 
         self.st.out("""\
 @comments@\
-virtual @rtype@ @id@(@params@)@raises@;""",
+virtual @rtype@ @id@(@params@)@raises@ = 0;""",
                
                rtype=rtype, id=node.identifier(),
                     params=params, raises=raises, comments=comments)
