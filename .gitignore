@@ -1,0 +1,2 @@
+test/*/*.hpp
+buildtools/idl/backends/*.pyc
