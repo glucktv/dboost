@@ -41,21 +41,28 @@ class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.st = st
 
     def visitAST(self, node):
+        ig = node.file().replace(".idl", "_H").upper()
+        self.st.out("""#ifndef @ig@
+#define @ig@
+""", ig = ig)
         for n in node.declarations():
             if n.mainFile():
                 n.accept(self)
+	self.st.out("#endif // @ig@", ig = ig)
 
     def visitModule(self, node):
         self.st.out("""\
 namespace @id@
 {""", id = node.identifier())
 
-        self.st.inc_indent()
+#        self.st.inc_indent()
 
+        self.st.out("""\
+""")
         for n in node.definitions():
             n.accept(self)
 
-        self.st.dec_indent()
+#        self.st.dec_indent()
 
         self.st.out("""\
 };

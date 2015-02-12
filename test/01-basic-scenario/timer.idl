@@ -1,7 +1,12 @@
+module dboost
+{
+
 interface timer
 {
   // returns -1 if some error happened, otherwise - timer id
   long add_timer(in long timeout_ms);
   void remove_timer(in long timer_id);
+};
+
 };
 
