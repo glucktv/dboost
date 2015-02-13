@@ -1,4 +1,4 @@
-module dboost
+module dboost_test
 {
 
 interface timer
@@ -9,4 +9,3 @@ interface timer
 };
 
 };
-

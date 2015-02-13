@@ -1,3 +1,6 @@
+module dboost_test
+{
+
 interface timer_observer
 {
   oneway void on_timeout();
@@ -12,3 +15,4 @@ interface timer
   void remove_timer(in timer_observer observer);
 };
 
+};
