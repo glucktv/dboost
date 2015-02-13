@@ -10,7 +10,10 @@ namespace dboost
 #define DBOOST_CHECK_PTR(call) 
 #define DBOOST_THROW_IF_NULL(value, error)
 
-timer_proxy::timer_proxy()
+timer_proxy::timer_proxy(client& c, const std::string& path): 
+  m_client(c),
+  m_path(path),
+  m_ifc_name("timer_proxy")
 {}
 
 timer_proxy::~timer_proxy() {}
@@ -19,13 +22,13 @@ timer_proxy::~timer_proxy() {}
 long timer_proxy::add_timer(const long& a0)
 {
   // create caller (name, arguments)
-  boost::scoped_ptr<DBusMessage> msg(DBOOST_CHECK_PTR(dbus_message_new_method_call(m_name, m_objPath, m_ifcName, "add_timer")));
+  boost::scoped_ptr<DBusMessage> msg(DBOOST_CHECK_PTR(dbus_message_new_method_call(m_client.peer_name(), m_path.c_str(), m_ifc_name.c_str(), "add_timer")));
   DBOOST_CHECK_RESULT(dbus_message_append_args(a0, DBUS_TYPE_INT32, &timeout_ms, DBUS_TYPE_INVALID));
 
   DBusError err;
 
   // call synchronously
-  boost::scoped_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_client.bus, msg, TIMEOUT_MS, &err));
+  boost::scoped_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_client.connection(), msg, TIMEOUT_MS, &err));
   DBOOST_CHECK_RESULT_WITH_ERR(result, err);
 
   // unpack output parameters
@@ -37,13 +40,13 @@ long timer_proxy::add_timer(const long& a0)
 void timer_proxy::remove_timer(const long& a0)
 {
   // create caller (name, arguments)
-  boost::scoped_ptr<DBusMessage> msg(DBOOST_CHECK_PTR(dbus_message_new_method_call(m_name, m_objPath, m_ifcName, "remove_timer")));
+  boost::scoped_ptr<DBusMessage> msg(DBOOST_CHECK_PTR(dbus_message_new_method_call(m_client.peer_name(), m_path.c_str(), m_ifc_name.c_str(), "remove_timer")));
   DBOOST_CHECK_RESULT(dbus_message_append_args(a0, DBUS_TYPE_INT32, &timeout_ms, DBUS_TYPE_INVALID));
 
   DBusError err;
 
   // call synchronously
-  boost::scoped_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_client.bus, &msg, TIMEOUT_MS, &err));
+  boost::scoped_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_client.connection(), &msg, TIMEOUT_MS, &err));
   DBOOST_CHECK_RESULT_WITH_ERR(result, err);
 
   // unpack output parameters

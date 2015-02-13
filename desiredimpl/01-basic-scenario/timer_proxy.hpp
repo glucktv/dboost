@@ -6,18 +6,18 @@
 namespace dboost
 {
 
-class timer_proxy: public timer
+class timer_proxy: virtual public timer
 {
 public:
+  timer_proxy(client& c, const std::string& path);
   virtual ~timer_proxy() {}
   virtual long add_timer(const long& timeout_ms); // override;
   virtual void remove_timer(const long& timer_id); // override;
 
 private:
   client& m_client;
-  const char* m_name;
-  const char* m_objPath;
-  const char* m_ifcName;
+  const std::string m_path;
+  const std::string m_ifc_name;
 };
 
 } // namespace dboost
