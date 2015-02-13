@@ -1,0 +1,27 @@
+module dboost_test
+{
+
+struct date
+{
+  int year;
+  int month;
+  int day;
+};
+
+struct person
+{
+  string family_name;
+  string name;
+  date   birth_date;  
+};
+
+exception id_not_found {};
+
+interface database
+{
+  long add_person(in person p);
+  person find_person_by_id(in long id) raises (id_not_found);
+  sequence<person> find_by_family(in string fn);
+};
+
+};
