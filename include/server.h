@@ -22,14 +22,19 @@ class adaptor;
 class server
 {
 public:
-    server();
+    server(const std::string& name);
+    ~server();
 
-    void register_adaptor(adaptor* a,
-                          const std::string& name,
-                          const std::vector<std::string>& interfaces);
-    void unregister_adaptor(adaptor* a, const std::string& name);
+    void register_adaptor(adaptor* a, const std::string& ifcname);
+    void unregister_adaptor(adaptor* a, const std::string& ifcname);
+
+    void register_object(const std::string& name);
+    void unregister_object(const std::string& name);
+
+    void run();
 
 private:
+    std::string m_name;
     dbus_ptr<DBusConnection> m_connection;
     std::map<std::string, adaptor*> m_adaptors;
     static DBusObjectPathVTable s_vtbl;

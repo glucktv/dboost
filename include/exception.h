@@ -46,10 +46,12 @@ inline error::~error()
 template <typename T>
 T dboost_check(T r, const char* call, const char* file, int line)
 {
-	if (!r)
-		throw exception("Error calling", call, file, line);
-	else return r;
+    if (!r)
+        throw exception("Error calling", call, file, line);
+    else return r;
 }
+
+
 
 } // namespace dboost
 

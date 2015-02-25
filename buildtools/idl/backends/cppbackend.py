@@ -41,7 +41,7 @@ class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.st = st
 
     def visitAST(self, node):
-        ig = node.file().replace(".idl", "_H").upper()
+        ig = node.file().replace(".idl", "_HPP").upper()
         self.st.out("""#ifndef @ig@
 #define @ig@
 """, ig = ig)
