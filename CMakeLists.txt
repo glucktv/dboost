@@ -42,10 +42,14 @@ add_dependencies(timer_dboost gen-ifcs)
 target_link_libraries(timer_dboost dboost)
 include_directories(${DES1_PATH})
 
-# test lib / main
-aux_source_directory(${EX1_PATH} EX1_SRCS)
-MESSAGE(STATUS "EX1_SRCS : " ${EX1_SRCS})
-add_executable(server-01 ${EX1_SRCS})
+# test lib / server
+set(EX1S_SRCS ${EX1_PATH}/timer_impl.cpp ${EX1_PATH}/server.cpp)
+add_executable(server-01 ${EX1S_SRCS})
 target_link_libraries(server-01 dboost timer_dboost dbus-1)
 add_dependencies(server-01 dboost timer_dboost)
 
+# test lib / client
+set(EX1C_SRCS ${EX1_PATH}/client.cpp)
+add_executable(client-01 ${EX1C_SRCS})
+target_link_libraries(client-01 dboost timer_dboost dbus-1)
+add_dependencies(client-01 dboost timer_dboost)

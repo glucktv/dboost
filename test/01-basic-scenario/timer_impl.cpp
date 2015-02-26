@@ -18,7 +18,7 @@ void timer_impl::remove_timer(const long& timer_id)
     clog << __FUNCTION__ << " id = " << timer_id << endl;
     auto it = m_timers.find(timer_id);
     if (it == m_timers.end()) {
-        cerr << "Could not find id = " << timer_id;
+        cerr << "Could not find id = " << timer_id << endl;
     }
     else {
         m_timers.erase(it);

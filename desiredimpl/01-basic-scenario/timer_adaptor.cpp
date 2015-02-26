@@ -133,7 +133,7 @@ dbus_ptr<DBusMessage> timer_adaptor::call_remove_timer(dboost_test::timer* t, DB
 	dbus_message_iter_get_basic(&it, &a0);
 	t->remove_timer(a0);
 
-	dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)), true);
+	dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
 
 	return result;
 }

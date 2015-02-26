@@ -12,25 +12,12 @@
 #include <cassert>
 #include <iostream>
 #include <dbus/dbus.h>
+#include <utils.h>
 
 namespace dboost
 {
 
 using namespace std;
-
-
-
-namespace {
-
-dbus_ptr<DBusConnection> create_connection()
-{
-    error err;
-    dbus_ptr<DBusConnection> s(dbus_bus_get(DBUS_BUS_SESSION, &err));
-    DBOOST_CHECK_WITH_ERR(s, err);
-    return s;
-}
-
-}
 
 DBusObjectPathVTable server::s_vtbl = {
     nullptr,
@@ -44,7 +31,7 @@ server::server(const std::string& name)
 {
     error err;
     if (dbus_bus_request_name(m_connection.get(), m_name.c_str(), 0, &err) == -1) {
-        throw err;
+        throw communication_error(err);
     }
 }
 

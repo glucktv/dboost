@@ -12,28 +12,41 @@
 #include <dbus/dbus.h>
 
 #define DBOOST_CHECK(x) dboost_check(x, #x, __FILE__, __LINE__)
-#define DBOOST_CHECK_WITH_ERR(x, err) if (!x) throw err;
+#define DBOOST_CHECK_WITH_ERR(x, err) if (!x) throw communication_error(err);
 
 namespace dboost
 {
 
-struct error: public DBusError, public std::runtime_error
+struct error: public DBusError
 {
     error();
     virtual ~error() noexcept;
+
+    error& operator= (const error&) = delete;
+    error(const error&) = delete;
+};
+
+struct communication_error: public std::runtime_error
+{
+	communication_error(const error& e);
 };
 
 class exception: public std::runtime_error
 {
 public:
     exception(const std::string& msg1, const std::string& msg2, const char* file, int line);
+    exception(const std::string& what): std::runtime_error(what) {}
 };
 
-inline error::error()
+inline communication_error::communication_error(const error& e)
     : std::runtime_error(std::string("Error: ") +
-                         name +
+                         e.name +
                          " (message: " +
-                         message + ")")
+                         e.message + ")")
+{
+}
+
+inline error::error()
 {
     dbus_error_init(this);
 }
@@ -50,8 +63,6 @@ T dboost_check(T r, const char* call, const char* file, int line)
         throw exception("Error calling", call, file, line);
     else return r;
 }
-
-
 
 } // namespace dboost
 

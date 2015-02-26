@@ -34,7 +34,7 @@ public:
     void run();
 
 private:
-    std::string m_name;
+    const std::string m_name;
     dbus_ptr<DBusConnection> m_connection;
     std::map<std::string, adaptor*> m_adaptors;
     static DBusObjectPathVTable s_vtbl;

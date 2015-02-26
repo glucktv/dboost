@@ -2,4 +2,5 @@ test/*/*.hpp
 buildtools/idl/backends/*.pyc
 .cproject
 .project
+.settings
 build

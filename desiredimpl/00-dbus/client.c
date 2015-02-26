@@ -27,6 +27,7 @@ int main() {
   DBusMessageIter args;
   
   // register our name on the bus, and check for errors
+#if 0
   ret = dbus_bus_request_name(conn, "test.signal.source", DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
   if (dbus_error_is_set(&err)) {
     fprintf(stderr, "Name Error (%s)\n", err.message);
@@ -36,24 +37,27 @@ int main() {
     fprintf(stderr, "DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret\n");
     exit(1);
   }
-    
+#endif
+
   // create a signal and check for errors 
-  msg = dbus_message_new_signal("/test/signal/Object", // object name of the signal
-	"test.signal.Type", // interface name of the signal
-	"Test"); // name of the signal
+  msg = dbus_message_new_method_call("org.dboost.basicscenario",
+	"/org/dboost/timer/0", // object name of the signal
+	"org.dboost.timer", // interface name of the signal
+	"add_timer"); // name of the signal
   if (NULL == msg) 
   { 
     fprintf(stderr, "Message Null\n"); 
   }
 
-  // append arguments onto signal
   dbus_message_iter_init_append(msg, &args);
-  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sigvalue)) { 
+  // append arguments onto signal
+  long l = 100500;
+  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_INT64, &l)) {
     fprintf(stderr, "Out Of Memory!\n"); 
   }
 
   // send the message and flush the connection
-  if (!dbus_connection_send(conn, msg, &serial)) { 
+  if (!dbus_connection_send_with_reply_and_block(conn, msg, 5000, &err)) {
     fprintf(stderr, "Out Of Memory!\n"); 
   }
   dbus_connection_flush(conn);
