@@ -291,7 +291,7 @@ def run(tree, args):
     tree.accept(ha)
     includes = map(lambda i: os.path.splitext(i)[0], ha.getIncludes())
 
-    name, ext = os.path.splitext(tree.file())
+    name, ext = os.path.splitext(os.path.basename(tree.file()))
     with open(name + '.hpp', 'w') as header:
         st = output.Stream(header, 2)
 

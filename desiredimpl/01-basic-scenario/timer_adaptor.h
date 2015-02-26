@@ -8,8 +8,8 @@
 #ifndef TIMER_ADAPTOR_H_
 #define TIMER_ADAPTOR_H_
 
-#include "adaptor.h"
-#include "timer.hpp"
+#include <adaptor.h>
+#include <timer.hpp>
 
 namespace dboost
 {
