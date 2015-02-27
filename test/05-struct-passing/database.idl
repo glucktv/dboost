@@ -3,9 +3,9 @@ module dboost_test
 
 struct date
 {
-  int year;
-  int month;
-  int day;
+  long year;
+  long month;
+  long day;
 };
 
 struct person
