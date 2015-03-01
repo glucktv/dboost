@@ -11,8 +11,8 @@
 #include <stdexcept>
 #include <dbus/dbus.h>
 
-#define DBOOST_CHECK(x) dboost_check(x, #x, __FILE__, __LINE__)
-#define DBOOST_CHECK_WITH_ERR(x, err) if (!x) throw communication_error(err);
+#define DBOOST_CHECK(x) dboost::dboost_check(x, #x, __FILE__, __LINE__)
+#define DBOOST_CHECK_WITH_ERR(x, err) if (!x) throw dboost::communication_error(err);
 
 namespace dboost
 {
@@ -60,7 +60,7 @@ template <typename T>
 T dboost_check(T r, const char* call, const char* file, int line)
 {
     if (!r)
-        throw exception("Error calling", call, file, line);
+        throw exception("Error calling ", call, file, line);
     else return r;
 }
 

@@ -14,7 +14,7 @@ using namespace std;
 
 int main()
 {
-	timer_proxy p(create_connection(), "org.dboost.basicscenario", "/org/dboost/timer/0");
+	dboost_test::timer_proxy p(create_connection(), "org.dboost.basicscenario", "/org/dboost/timer/0");
 	long id = p.add_timer(100500);
 	cout << "Got id = " << id << endl;
 	//usleep(5000 * 1000);

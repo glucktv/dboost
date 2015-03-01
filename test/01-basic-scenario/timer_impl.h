@@ -12,8 +12,8 @@ class timer_impl: public timer
 {
 public:
     timer_impl(): m_last_id(0) {}
-    virtual long add_timer(const long& timeout_ms);
-    virtual void remove_timer(const long& timer_id);
+    virtual long add_timer(const long& timeout_ms) override;
+    virtual void remove_timer(const long& timer_id) override;
 
 private:
     long m_last_id;

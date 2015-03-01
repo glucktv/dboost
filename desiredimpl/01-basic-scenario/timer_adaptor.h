@@ -16,10 +16,15 @@ namespace dboost
 
 class server;
 
+}
+
+namespace dboost_test
+{
+
 class timer_adaptor: public virtual dboost::adaptor
 {
 public:
-    timer_adaptor(server& s);
+    timer_adaptor(dboost::server& s);
     virtual ~timer_adaptor();
     virtual DBusHandlerResult handle_message(DBusConnection* connection, DBusMessage* message) override;
 
@@ -27,11 +32,11 @@ public:
     void remove_object(const std::string& name);
 
 private:
-    server& m_server;
+    dboost::server& m_server;
     std::map<std::string, dboost_test::timer*> m_objects;
 
-    dbus_ptr<DBusMessage> call_add_timer(dboost_test::timer* t, DBusMessage* m);
-    dbus_ptr<DBusMessage> call_remove_timer(dboost_test::timer* t, DBusMessage* m);
+    dboost::dbus_ptr<DBusMessage> call_add_timer(dboost_test::timer* t, DBusMessage* m);
+    dboost::dbus_ptr<DBusMessage> call_remove_timer(dboost_test::timer* t, DBusMessage* m);
 
     static const char* INTERFACE_NAME;
 };

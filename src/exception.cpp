@@ -17,7 +17,7 @@ namespace
 std::string construct_message(const std::string& msg1, const std::string& msg2, const char* file, int line)
 {
     std::stringstream ss;
-    ss << msg1 << msg2 << " in file: " << file << " ,line: " << line;
+    ss << msg1 << " " << msg2 << " in file: " << file << " ,line: " << line;
     return ss.str();
 }
 
