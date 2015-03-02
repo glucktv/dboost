@@ -288,6 +288,12 @@ virtual @rtype@ @id@(@params@)@raises@ = 0;""",
     def visitSequenceType(self, type):
         self.__result_type = "std::vector<" + self.__result_type + ">"
 
+    def visitStringType(self, type):
+        self.__result_type = "std::string"
+
+    def visitWStringType(self, type):
+        self.__result_type = "std:wstring"
+
 def run(tree, args):
     ha = HeadersAggregator(tree.file());
     tree.accept(ha)
