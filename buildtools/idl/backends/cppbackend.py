@@ -319,9 +319,8 @@ virtual @rtype@ @id@(@params@)@raises@ = 0;""",
     def visitDeclaredType(self, type):
         self.__result_type = idlutil.ccolonName(type.decl().scopedName())
 
-
     def visitSequenceType(self, type):
-        self.__result_type = "std::vector<" + self.__result_type + ">"
+        self.__result_type = "std::vector<" + type.seqType().name() + ">"
 
     def visitStringType(self, type):
         self.__result_type = "std::string"
