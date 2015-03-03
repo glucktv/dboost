@@ -45,7 +45,7 @@ private:
 
     dboost::dbus_ptr<DBusMessage> call_add_person(dboost_test::database* t, DBusMessage* m);
     dboost::dbus_ptr<DBusMessage> call_find_person_by_id(dboost_test::database* t, DBusMessage* m);
-    //dboost::dbus_ptr<DBusMessage> call_find_by_family(dboost_test::database* t, DBusMessage* m);
+    dboost::dbus_ptr<DBusMessage> call_find_by_family(dboost_test::database* t, DBusMessage* m);
 
     static const char* INTERFACE_NAME;
 

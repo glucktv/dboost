@@ -17,14 +17,14 @@ struct person
 
 exception id_not_found {};
 
-//typedef sequence<person> persons; 
+typedef sequence<person> persons; 
 
 interface database
 {
 
   long add_person(in person p);
   person find_person_by_id(in long id) raises (id_not_found);
-  //persons find_by_family(in string fn);
+  persons find_by_family(in string fn);
 };
 
 };

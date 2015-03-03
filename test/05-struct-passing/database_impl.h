@@ -20,6 +20,7 @@ public:
     database_impl();
     virtual long add_person(const dboost_test::person& p);
     virtual dboost_test::person find_person_by_id(const long id) throw (dboost_test::id_not_found);
+    virtual dboost_test::persons find_by_family(const std::string& fn);
 
 private:
     int m_last_index;

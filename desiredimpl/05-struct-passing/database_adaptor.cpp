@@ -63,7 +63,7 @@ database_adaptor::handle_message(DBusConnection* connection,
     static const caller_table vtbl {
         { "add_person", &database_adaptor::call_add_person },
         { "find_person_by_id", &database_adaptor::call_find_person_by_id },
-        //{ "find_by_family", &database_adaptor::call_find_by_family }
+        { "find_by_family", &database_adaptor::call_find_by_family }
     };
 
     auto func = vtbl.find(name);
@@ -129,7 +129,7 @@ database_adaptor::call_find_person_by_id(dboost_test::database* t,
     os & r;
     return result;
 }
-#if 0
+
 dboost::dbus_ptr<DBusMessage>
 database_adaptor::call_find_by_family(dboost_test::database* t, DBusMessage* m)
 {
@@ -144,5 +144,5 @@ database_adaptor::call_find_by_family(dboost_test::database* t, DBusMessage* m)
     os & r;
     return result;
 }
-#endif
+
 } // namespace dboost

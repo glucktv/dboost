@@ -76,4 +76,28 @@ dboost_test::person database_proxy::find_person_by_id(const long a0)
     return r;
 }
 
+dboost_test::persons database_proxy::find_by_family(const std::string& a0)
+{
+    // create caller (name, arguments)
+    dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "find_by_family")));
+    dboost::oserializer os(msg.get());
+    os & a0;
+
+    // call synchronously
+    dboost::error err;
+    dboost::dbus_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_connection.get(), msg.get(), TIMEOUT_MS, &err));
+
+    // check if there was an error
+    DBOOST_CHECK_WITH_ERR(reply, err);
+    if (dbus_message_get_type(reply.get()) == DBUS_MESSAGE_TYPE_ERROR) {
+        throw dboost::exception(dbus_message_get_error_name(reply.get()));
+    }
+
+    // unpack output parameters
+    dboost::iserializer is(reply.get());
+    dboost_test::persons r;
+    is & r;
+    return r;
+}
+
 } // namespace dboost

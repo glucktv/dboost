@@ -21,6 +21,7 @@ public:
                    const std::string& bus_name, const std::string& obj_name);
     long add_person(const dboost_test::person& p);
     dboost_test::person find_person_by_id(const long id) throw (dboost_test::id_not_found);
+    dboost_test::persons find_by_family(const std::string& fn);
 
 private:
     dboost::dbus_ptr<DBusConnection> m_connection;
