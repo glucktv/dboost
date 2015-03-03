@@ -198,18 +198,9 @@ struct serialization_strategy<std::vector<T>, false>
             throw exception("Wrong parameter");
         }
         subserializer<iserializer> ss(is);
-        while (true) {
+        while (dbus_message_iter_get_arg_type(&ss) != DBUS_TYPE_INVALID) {
             T record;
-            // we expect an exception here as currently 
-            // it's the only way to indicate end of sequence
-            // in common case - this approach is not much 
-            // elegant - so it's the area for future improvement
-            try {
-                ss & record;
-            }
-            catch (const exception&) {
-                break;
-            }
+            ss & record;
             val.push_back(record);
             dbus_message_iter_next(&ss);
         }
