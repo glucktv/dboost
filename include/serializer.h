@@ -12,6 +12,7 @@
 #include <type_traits.h>
 #include <string>
 #include <exception.h>
+#include <utils.h>
 
 namespace dboost
 {
@@ -73,6 +74,37 @@ inline subserializer<oserializer>::~subserializer()
     dbus_message_iter_close_container(&m_parent, this);
 }
 
+template <class C>
+struct remove_const
+{
+  typedef C type;
+};
+
+template <class C>
+struct remove_const<const C>
+{
+  typedef C type;
+};
+
+#if 0
+template <typename T, bool I>
+struct signature_helper
+{
+    std::string get();
+};
+
+template <typename T>
+struct signature_helper<T, true>
+{
+    std::string get() { return as_string(type_traits<T>::type); }
+}
+
+template <typename T>
+std::string get_signature()
+{
+    return signature_helper<T, remove_const<T>::type>::get();
+};
+#endif
 //
 // Default impl - for types that have corresponding
 //
@@ -135,18 +167,28 @@ struct serialization_strategy<std::string, true>
 };
 
 //TODO: specialize serialization_strategy for vectors and arrays
-
-template <class C>
-struct remove_const
+#if 0
+template <typename T>
+struct serialization_strategy<std::vector<T>, false>
 {
-  typedef C type;
+    static void do_serialize(iserializer& is, std::vector<T>& val)
+    {
+        if (dbus_message_iter_get_arg_type(&is) != DBUS_TYPE_ARRAY) {
+            throw exception("Wrong parameter");
+        }
+        if (dbus_message_iter_get_element_type(&is) != )
+        const char* ptr;
+        dbus_message_iter_get_array_len(&is, &ptr);
+        val = ptr;
+        dbus_message_iter_next(&is);
+    }
+    static void do_serialize(oserializer& os, std::string& val)
+    {
+        const char* ptr = val.c_str();
+        DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<std::string>::type, &ptr));
+    }
 };
-
-template <class C>
-struct remove_const<const C>
-{
-  typedef C type;
-};
+#endif
 
 template <typename A, typename T>
 A& operator&(A& a, T& t)

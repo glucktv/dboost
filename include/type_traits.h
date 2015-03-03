@@ -39,6 +39,7 @@ TYPE(int64_t, DBUS_TYPE_INT64)
 TYPE(uint64_t, DBUS_TYPE_UINT64)
 TYPE(double, DBUS_TYPE_DOUBLE)
 TYPE(std::string, DBUS_TYPE_STRING)
+//TYPE(std::vector, DBUS_TYPE_ARRAY)
 #undef TYPE
 
 }

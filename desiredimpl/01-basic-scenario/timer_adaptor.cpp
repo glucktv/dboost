@@ -13,7 +13,6 @@
 #include <cstring>
 #include <iostream>
 #include <serializer.h>
-#include <timer_types.h>
 #include <map>
 
 using namespace std;
