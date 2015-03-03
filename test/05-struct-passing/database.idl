@@ -3,9 +3,9 @@ module dboost_test
 
 struct date
 {
-  long year;
-  long month;
-  long day;
+  short year;
+  short month;
+  short day;
 };
 
 struct person
@@ -17,11 +17,14 @@ struct person
 
 exception id_not_found {};
 
+//typedef sequence<person> persons; 
+
 interface database
 {
+
   long add_person(in person p);
   person find_person_by_id(in long id) raises (id_not_found);
-  sequence<person> find_by_family(in string fn);
+  //persons find_by_family(in string fn);
 };
 
 };

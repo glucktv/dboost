@@ -138,8 +138,7 @@ const @type@ @id@ = @value@;""",
         decll = []
         for d in node.declarators():
             d.accept(self)
-            decll.append(self.__result_declarator)
-
+            decll.append(d.identifier())
         decls = string.join(decll, ", ")
 
         self.st.out("""\
@@ -164,7 +163,7 @@ struct @id@
             decll = []
             for d in m.declarators():
                 d.accept(self)
-                decll.append(self.__result_declarator)
+                decll.append(d.identifier())
             decls = string.join(decll, ", ")
 
             self.st.out("""\
@@ -254,9 +253,9 @@ virtual @type@ @ids@(const @type@);""", type=type, ids=ids)
             type = self.__result_type
             if type != 'void':
                 if type in self.ttsMap.values():
-                    paraml.append(inout + ' ' + type + '& ' + p.identifier())
+                    paraml.append(inout + ' ' + type + ' ' + p.identifier())
                 else:
-                    paraml.append(inout + ' ' + type + '* ' + p.identifier())
+                    paraml.append(inout + ' ' + type + '& ' + p.identifier())
             else:
                 paraml.append(inout + ' ' + type + ' ' + p.identifier())
 
@@ -285,6 +284,15 @@ virtual @rtype@ @id@(@params@)@raises@ = 0;""",
     def visitDeclaredType(self, type):
         self.__result_type = idlutil.ccolonName(type.decl().scopedName())
 
+
+    def visitSequenceType(self, type):
+        self.__result_type = "std::vector<" + self.__result_type + ">"
+
+    def visitStringType(self, type):
+        self.__result_type = "std::string"
+
+    def visitWStringType(self, type):
+        self.__result_type = "std:wstring"
 
 def run(tree, args):
     ha = HeadersAggregator(tree.file());
