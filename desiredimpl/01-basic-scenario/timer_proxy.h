@@ -12,8 +12,8 @@ class timer_proxy: virtual public dboost_test::timer
 public:
   timer_proxy(dboost::dbus_ptr<DBusConnection> conn, const std::string& bus_name, const std::string& obj_name);
 
-  virtual long add_timer(const long& timeout_ms) override;
-  virtual void remove_timer(const long& timer_id) override;
+  virtual long add_timer(const long timeout_ms) override;
+  virtual void remove_timer(const long timer_id) override;
 
 private:
   dboost::dbus_ptr<DBusConnection> m_connection;

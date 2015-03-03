@@ -19,7 +19,7 @@ timer_proxy::timer_proxy(dboost::dbus_ptr<DBusConnection> conn,
 }
 
 // here arguments are called a0 .. aN to avoid naming clashes, result is called r
-long timer_proxy::add_timer(const long& a0)
+long timer_proxy::add_timer(const long a0)
 {
     // create caller (name, arguments)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "add_timer")));
@@ -43,7 +43,7 @@ long timer_proxy::add_timer(const long& a0)
     return r;
 }
 
-void timer_proxy::remove_timer(const long& a0)
+void timer_proxy::remove_timer(const long a0)
 {
     // create caller (name, arguments)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "remove_timer")));

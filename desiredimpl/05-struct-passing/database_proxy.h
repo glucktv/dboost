@@ -19,9 +19,9 @@ class database_proxy: public virtual dboost_test::database
 public:
     database_proxy(dboost::dbus_ptr<DBusConnection> conn,
                    const std::string& bus_name, const std::string& obj_name);
-    long add_person(const dboost_test::person& p);
-    dboost_test::person find_person_by_id(const long id) throw (dboost_test::id_not_found);
-    dboost_test::persons find_by_family(const std::string& fn);
+    long add_person(const dboost_test::person& p) override;
+    dboost_test::person find_person_by_id(const long id) throw (dboost_test::id_not_found) override;
+    dboost_test::persons find_by_family(const std::string& fn) override;
 
 private:
     dboost::dbus_ptr<DBusConnection> m_connection;

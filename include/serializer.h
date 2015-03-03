@@ -14,7 +14,6 @@
 #include <exception.h>
 #include <utils.h>
 #include <sstream>
-#include <iostream>
 
 namespace dboost
 {
@@ -143,7 +142,6 @@ struct serialization_strategy<T, true>
 {
     static void do_serialize(iserializer& is, T& val)
     {
-        std::clog << __PRETTY_FUNCTION__ << std::endl;
         if (dbus_message_iter_get_arg_type(&is) != type_traits<T>::type) {
             throw exception("Wrong parameter");
         }
@@ -152,7 +150,6 @@ struct serialization_strategy<T, true>
     }
     static void do_serialize(oserializer& os, T& val)
     {
-        std::clog << __PRETTY_FUNCTION__ << std::endl;
         DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<T>::type, &val));
     }
 
@@ -167,7 +164,6 @@ struct serialization_strategy<std::string, true>
 {
     static void do_serialize(iserializer& is, std::string& val)
     {
-        std::clog << __PRETTY_FUNCTION__ << std::endl;
         if (dbus_message_iter_get_arg_type(&is) != type_traits<std::string>::type) {
             throw exception("Wrong parameter");
         }
@@ -178,7 +174,6 @@ struct serialization_strategy<std::string, true>
     }
     static void do_serialize(oserializer& os, std::string& val)
     {
-        std::clog << __PRETTY_FUNCTION__ << std::endl;
         auto ptr = val.c_str();
         DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<std::string>::type, &ptr));
     }
@@ -196,7 +191,6 @@ struct serialization_strategy<std::vector<T>, false>
 {
     static void do_serialize(iserializer& is, std::vector<T>& val)
     {
-        std::clog << __PRETTY_FUNCTION__ << std::endl;
         if (dbus_message_iter_get_arg_type(&is) != DBUS_TYPE_ARRAY) {
             throw exception("Wrong parameter");
         }
