@@ -119,6 +119,9 @@ struct serialization_strategy
 {
     static void do_serialize(iserializer& is, T& val)
     {
+        if (dbus_message_iter_get_arg_type(&is) != DBUS_TYPE_STRUCT) {
+            throw exception("Wrong parameter");
+        }
         subserializer<iserializer> ss(is);
         serialize(ss, val);
     }
@@ -159,6 +162,7 @@ struct serialization_strategy<T, true>
     }
 };
 
+// string
 template <>
 struct serialization_strategy<std::string, true>
 {
@@ -184,8 +188,7 @@ struct serialization_strategy<std::string, true>
 
 };
 
-//TODO: specialize serialization_strategy for vectors and arrays
-
+// vector<T>
 template <typename T>
 struct serialization_strategy<std::vector<T>, false>
 {
@@ -195,9 +198,18 @@ struct serialization_strategy<std::vector<T>, false>
             throw exception("Wrong parameter");
         }
         subserializer<iserializer> ss(is);
-        while (dbus_message_iter_has_next(&ss)) {
+        while (true) {
             T record;
-            ss & record;
+            // we expect an exception here as currently 
+            // it's the only way to indicate end of sequence
+            // in common case - this approach is not much 
+            // elegant - so it's the area for future improvement
+            try {
+                ss & record;
+            }
+            catch (const exception&) {
+                break;
+            }
             val.push_back(record);
             dbus_message_iter_next(&ss);
         }

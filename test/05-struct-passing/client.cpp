@@ -1,7 +1,6 @@
 #include "utils.h"
 #include "database_proxy.h"
 #include <iostream>
-#include <unistd.h>
 
 using namespace dboost;
 using namespace std;
@@ -26,7 +25,6 @@ int main()
 
     long id = p.add_person(pers);
     cout << "Got id = " << id << endl;
-    //usleep(5000 * 1000);
 
     dboost_test::person op = p.find_person_by_id(id);
     print_person(op);
@@ -35,6 +33,12 @@ int main()
     cout << "There are " << pp.size() << " persons." << endl;
     for (auto person: pp)
         print_person(person);
+
+    pp = p.find_by_family("Hertxz");
+    cout << "There are " << pp.size() << " persons." << endl;
+    for (auto person: pp)
+        print_person(person);
+
 
     return 0;
 }
