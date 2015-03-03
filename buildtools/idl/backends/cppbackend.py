@@ -5,15 +5,43 @@ class HeadersAggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
     def __init__(self, main):
         self.includes = set([])
+        self.stdincludes = set([])
         self.main = main
     def getIncludes(self):
-        return self.includes
+        return (self.includes, self.stdincludes)
 
     def visitAST(self, node):
         for d in node.declarations():
             if not d.mainFile():
                 self.includes.add(d.file())
                 d.accept(self)
+            else:
+                d.accept(self)
+
+    def visitModule(self, node):
+        for n in node.definitions():
+            n.accept(self)
+
+    def visitInterface(self, node):
+        for n in node.contents():
+            n.accept(self)
+
+    def visitTypedef(self, node):
+        node.aliasType().accept(self)
+        
+    def visitSequenceType(self, node):
+        self.stdincludes.add("vector")
+    
+    def visitWStringType(self, node):
+        self.stdincludes.add("wstring")
+    
+    def visitStringType(self, node):
+        self.stdincludes.add("string")
+
+    def visitStruct(self, node):
+        for m in node.members():
+            m.memberType().accept(self)
+
 
 class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
@@ -27,7 +55,7 @@ class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         idltype.tk_double:     "double",
         idltype.tk_boolean:    "boolean",
         idltype.tk_char:       "char",
-        idltype.tk_octet:      "octet",
+        idltype.tk_octet:      "unsigned char",
         idltype.tk_any:        "any",
         idltype.tk_TypeCode:   "CORBA::TypeCode",
         idltype.tk_Principal:  "CORBA::Principal",
@@ -37,14 +65,21 @@ class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         idltype.tk_wchar:      "wchar"
         }
 
-    def __init__(self, st):
+    def __init__(self, st, includes, stdincludes):
         self.st = st
+        self.includes = includes
+        self.stdincludes = stdincludes
 
     def visitAST(self, node):
         ig = os.path.basename(node.file()).replace(".idl", "_HPP").upper()
         self.st.out("""#ifndef @ig@
 #define @ig@
 """, ig = ig)
+        self.st.out(
+            '\n'.join(map(lambda i: '#include <' + i + '>', self.stdincludes)));
+        self.st.out(
+            '\n'.join(map(lambda i: '#include "' + i + '.hpp"', self.includes)));
+
         for n in node.declarations():
             if n.mainFile():
                 n.accept(self)
@@ -297,14 +332,12 @@ virtual @rtype@ @id@(@params@)@raises@ = 0;""",
 def run(tree, args):
     ha = HeadersAggregator(tree.file());
     tree.accept(ha)
-    includes = map(lambda i: os.path.splitext(i)[0], ha.getIncludes())
+    includes, stdincludes = ha.getIncludes()
+    includes = map(lambda i: os.path.splitext(i)[0], includes)
 
     name, ext = os.path.splitext(os.path.basename(tree.file()))
     with open(name + '.hpp', 'w') as header:
         st = output.Stream(header, 2)
 
-        st.out(
-            '\n'.join(map(lambda i: '#include "' + i + '.hpp"', includes)));
-
-        cv = CppVisitor(st)
+        cv = CppVisitor(st, includes, stdincludes)
         tree.accept(cv)
