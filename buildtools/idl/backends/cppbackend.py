@@ -55,7 +55,7 @@ class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         idltype.tk_double:     "double",
         idltype.tk_boolean:    "boolean",
         idltype.tk_char:       "char",
-        idltype.tk_octet:      "octet",
+        idltype.tk_octet:      "unsigned char",
         idltype.tk_any:        "any",
         idltype.tk_TypeCode:   "CORBA::TypeCode",
         idltype.tk_Principal:  "CORBA::Principal",
@@ -65,14 +65,21 @@ class CppVisitor (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         idltype.tk_wchar:      "wchar"
         }
 
-    def __init__(self, st):
+    def __init__(self, st, includes, stdincludes):
         self.st = st
+        self.includes = includes
+        self.stdincludes = stdincludes
 
     def visitAST(self, node):
         ig = node.file().replace(".idl", "_H").upper()
         self.st.out("""#ifndef @ig@
 #define @ig@
 """, ig = ig)
+        self.st.out(
+            '\n'.join(map(lambda i: '#include <' + i + '>', self.stdincludes)));
+        self.st.out(
+            '\n'.join(map(lambda i: '#include "' + i + '.hpp"', self.includes)));
+
         for n in node.declarations():
             if n.mainFile():
                 n.accept(self)
@@ -332,10 +339,5 @@ def run(tree, args):
     with open(name + '.hpp', 'w') as header:
         st = output.Stream(header, 2)
 
-        st.out(
-            '\n'.join(map(lambda i: '#include <' + i + '>', stdincludes)));
-        st.out(
-            '\n'.join(map(lambda i: '#include "' + i + '.hpp"', includes)));
-
-        cv = CppVisitor(st)
+        cv = CppVisitor(st, includes, stdincludes)
         tree.accept(cv)
