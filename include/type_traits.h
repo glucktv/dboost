@@ -16,16 +16,14 @@ namespace dboost
 template <typename T>
 struct type_traits
 {
-    enum { type = DBUS_TYPE_INVALID };
-    enum { is_integral = false };
+    enum { id = DBUS_TYPE_INVALID };
 };
 
 #define TYPE(T, ID)                  \
     template <>                      \
     struct type_traits<T>            \
     {                                \
-        enum { type = ID };          \
-        enum { is_integral = true }; \
+        enum { id = ID };            \
     };
 
 TYPE(bool, DBUS_TYPE_BOOLEAN)
@@ -39,7 +37,7 @@ TYPE(int64_t, DBUS_TYPE_INT64)
 TYPE(uint64_t, DBUS_TYPE_UINT64)
 TYPE(double, DBUS_TYPE_DOUBLE)
 TYPE(std::string, DBUS_TYPE_STRING)
-//TYPE(std::vector, DBUS_TYPE_ARRAY)
+
 #undef TYPE
 
 }

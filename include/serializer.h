@@ -85,6 +85,9 @@ inline subserializer<oserializer>::~subserializer()
     dbus_message_iter_close_container(&m_parent, this);
 }
 
+//
+// removes constness from type
+//
 template <class C>
 struct remove_const
 {
@@ -145,7 +148,7 @@ struct serialization_strategy<T, true>
 {
     static void do_serialize(iserializer& is, T& val)
     {
-        if (dbus_message_iter_get_arg_type(&is) != type_traits<T>::type) {
+        if (dbus_message_iter_get_arg_type(&is) != type_traits<T>::id) {
             throw exception("Wrong parameter");
         }
         dbus_message_iter_get_basic(&is, &val);
@@ -153,12 +156,12 @@ struct serialization_strategy<T, true>
     }
     static void do_serialize(oserializer& os, T& val)
     {
-        DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<T>::type, &val));
+        DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<T>::id, &val));
     }
 
     static void do_serialize(type_collector& tc, const T& val)
     {
-        tc << static_cast<char>(type_traits<T>::type);
+        tc << static_cast<char>(type_traits<T>::id);
     }
 };
 
@@ -168,7 +171,7 @@ struct serialization_strategy<std::string, true>
 {
     static void do_serialize(iserializer& is, std::string& val)
     {
-        if (dbus_message_iter_get_arg_type(&is) != type_traits<std::string>::type) {
+        if (dbus_message_iter_get_arg_type(&is) != type_traits<std::string>::id) {
             throw exception("Wrong parameter");
         }
         const char* ptr;
@@ -179,11 +182,11 @@ struct serialization_strategy<std::string, true>
     static void do_serialize(oserializer& os, std::string& val)
     {
         auto ptr = val.c_str();
-        DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<std::string>::type, &ptr));
+        DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<std::string>::id, &ptr));
     }
     static void do_serialize(type_collector& tc, const std::string& val)
     {
-        tc << static_cast<char>(type_traits<std::string>::type);
+        tc << static_cast<char>(type_traits<std::string>::id);
     }
 
 };
@@ -208,7 +211,7 @@ struct serialization_strategy<std::vector<T>, false>
 
     static void do_serialize(oserializer& os, std::vector<T>& val)
     {
-        // we don't neet to add 'a' prefix as it is added automatically
+        // we don't need to add 'a' prefix as it is added automatically
         type_collector c;
         c & *static_cast<T*>(0);
         auto signature = c.str();
@@ -227,11 +230,33 @@ struct serialization_strategy<std::vector<T>, false>
     }
 };
 
+//
+// The following template derives whether a type is registered
+// in type_traits.h as a DBus built-in type.
+//
+// usage: is_integral<dbus-type-id>::flag
+//
+
+template <int>
+struct is_integral
+{
+    enum { flag = true };
+};
+
+template <>
+struct is_integral<DBUS_TYPE_INVALID>
+{
+    enum { flag = false };
+};
+
 template <typename A, typename T>
 A& operator&(A& a, T& t)
 {
     typedef typename remove_const<T>::type type;
-    serialization_strategy<type, type_traits<type>::is_integral>::do_serialize(a, const_cast<type&>(t));
+    const int type_id = type_traits<type>::id;
+    const bool integral = is_integral<type_id>::flag;
+    typedef serialization_strategy<type, integral> strategy;
+    strategy::do_serialize(a, const_cast<type&>(t));
     return a;
 }
 
