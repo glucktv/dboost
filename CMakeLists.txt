@@ -2,18 +2,16 @@ cmake_minimum_required(VERSION 2.8.8)
 
 set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
-set(COMMON_INCLUDES "/usr/include/dbus-1.0 /usr/lib/x86_64-linux-gnu/dbus-1.0/include")
-list(APPEND COMMON_INCLUDES /usr/lib/x86_64-linux-gnu/dbus-1.0/include)
-list(APPEND COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+
+include_directories(/usr/include/dbus-1.0)
+include_directories(/usr/lib/x86_64-linux-gnu/dbus-1.0/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 
 # core lib
 aux_source_directory(src CORE_SRCS)
 MESSAGE(STATUS "Core sources: " ${CORE_SRCS})
 add_library(dboost STATIC ${CORE_SRCS})	
-set_target_properties(dboost PROPERTIES INCLUDE_DIRECTORIES ${COMMON_INCLUDES})
-get_target_property(VAR dboost INCLUDE_DIRECTORIES)
-MESSAGE(STATUS "INCLUDE_DIRECTORIES: " ${VAR})
 
 function(build_example NAME)
 
@@ -58,13 +56,11 @@ function(build_example NAME)
     add_executable(${NAME}-client ${EXC_SRCS})
     target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1)
     add_dependencies(${NAME}-client dboost dboost_test_${NAME})
-    set_target_properties(dboost_test_${NAME} ${NAME}-server ${NAME}-client 
-                          PROPERTIES INCLUDE_DIRECTORIES ${COMMON_INCLUDES}:${DSTPATH})
-
-    MESSAGE(STATUS "INC_DIRS: " ${COMMON_INCLUDES}:${DSTPATH}) 
+    set_property(TARGET dboost_test_${NAME} ${NAME}-server ${NAME}-client 
+	    APPEND PROPERTY INCLUDE_DIRECTORIES ${DSTPATH} ${PROJECT_SOURCE_DIR}/${DES_PATH})
 
 endfunction(build_example)
 
 build_example(01-basic-scenario)
 build_example(05-struct-passing)
-build_example(02-observer)
+#build_example(02-observer)
