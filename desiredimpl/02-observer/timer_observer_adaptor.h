@@ -8,6 +8,9 @@
 #ifndef TIMER_OBSERVER_ADAPTOR_H_
 #define TIMER_OBSERVER_ADAPTOR_H_
 
+#include <adaptor.h>
+#include <timer.hpp>
+
 namespace dboost_test
 {
 

@@ -8,11 +8,13 @@
 #include "timer_proxy.h"
 #include <iostream>
 #include <unistd.h>
+#include <server.h>
+#include <timer_observer_adaptor.h>
 
 using namespace dboost;
 using namespace std;
 
-class observer: public timer_observer
+class observer: public dboost_test::timer_observer
 {
 public:
     virtual void on_timeout();
@@ -29,15 +31,15 @@ int main()
 	dboost::server s("org.dboost.observer.client");
 	dboost_test::timer_observer_adaptor toa(s);
 	observer obs;
-	toa.add_object(obs);
+	toa.add_object(&obs, "org.dboost.timer.observer.1");
 
-	long id = p.add_timer(100500, obs);
+	long id = p.add_timer(100500, &obs);
 	cout << "Got id = " << id << endl;
 
 
 	usleep(5000 * 1000);
 
-	p.remove_timer(obs);
+	p.remove_timer(&obs);
 
     return 0;
 }

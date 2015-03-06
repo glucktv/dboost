@@ -15,20 +15,22 @@
 #include <serializer.h>
 #include <map>
 
+using namespace std;
+
 namespace dboost_test
 {
 
-const char* timer_adaptor::INTERFACE_NAME = "org.dboost.timerobserver";
+const char* timer_observer_adaptor::INTERFACE_NAME = "org.dboost.timerobserver";
 
 timer_observer_adaptor::timer_observer_adaptor(dboost::server& s)
     : m_server(s)
 {
-    m_server.register_adaptor(this, timer_adaptor::INTERFACE_NAME);
+    m_server.register_adaptor(this, timer_observer_adaptor::INTERFACE_NAME);
 }
 
 timer_observer_adaptor::~timer_observer_adaptor()
 {
-    m_server.unregister_adaptor(this, timer_adaptor::INTERFACE_NAME);
+    m_server.unregister_adaptor(this, timer_observer_adaptor::INTERFACE_NAME);
 }
 
 DBusHandlerResult
@@ -55,11 +57,10 @@ timer_observer_adaptor::handle_message(DBusConnection* connection,
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
-    typedef dboost::dbus_ptr<DBusMessage> (timer_adaptor::*caller)(timer*, DBusMessage*);
+    typedef dboost::dbus_ptr<DBusMessage> (timer_observer_adaptor::*caller)(timer_observer*, DBusMessage*);
     typedef map<string, caller> caller_table;
     static const caller_table vtbl {
-        { "add_timer", &timer_adaptor::call_add_timer },
-        { "remove_timer", &timer_adaptor::call_remove_timer },
+        { "on_timeout", &timer_observer_adaptor::call_on_timeout },
     };
 
     auto func = vtbl.find(name);
@@ -104,7 +105,7 @@ timer_observer_adaptor::call_on_timeout(dboost_test::timer_observer* t,
 {
     clog << __FUNCTION__ << endl;
     assert(t && m);
-    long r = t->on_timeout(a0);
+    t->on_timeout();
     return dboost::dbus_ptr<DBusMessage>(nullptr);
 }
 

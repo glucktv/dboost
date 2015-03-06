@@ -6,6 +6,7 @@
  */
 
 #include "timer_adaptor.h"
+#include "timer_observer_adaptor.h"
 #include "server.h"
 #include "exception.h"
 #include <dbus/dbus.h>
@@ -104,8 +105,8 @@ dboost::dbus_ptr<DBusMessage> timer_adaptor::call_add_timer(dboost_test::timer* 
     // *****
     // TODO: pass object reference here!
     // *****
-
-    long r = t->add_timer(a0);
+    dboost::ref<timer_observer> a1;
+    long r = t->add_timer(a0, a1);
     dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
     dboost::oserializer os(result.get());
     os & r;
@@ -117,13 +118,7 @@ dboost::dbus_ptr<DBusMessage> timer_adaptor::call_remove_timer(dboost_test::time
     clog << __FUNCTION__ << endl;
     assert(t && m);
     dboost::iserializer is(m);
-    long a0;
-    is & a0;
-
-    // *****
-    // TODO: pass object reference here!
-    // *****
-
+    dboost::ref<timer_observer> a0;
     t->remove_timer(a0);
     dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
     return result;

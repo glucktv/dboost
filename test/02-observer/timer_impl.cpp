@@ -6,16 +6,17 @@ using namespace std;
 namespace dboost_test
 {
 
-long timer_impl::add_timer(const long timeout_ms)
+long timer_impl::add_timer(const long timeout_ms, dboost::ref<timer_observer> obs)
 {  
     clog << __FUNCTION__ << " to = " << timeout_ms << " id = " << m_last_id << endl;
     m_timers[m_last_id] = timeout_ms;
     return m_last_id++;
 }
 
-void timer_impl::remove_timer(const long timer_id)
+void timer_impl::remove_timer(dboost::ref<timer_observer> obs)
 {
-    clog << __FUNCTION__ << " id = " << timer_id << endl;
+    clog << __FUNCTION__ << endl;
+    /*
     auto it = m_timers.find(timer_id);
     if (it == m_timers.end()) {
         cerr << "Could not find id = " << timer_id << endl;
@@ -23,6 +24,7 @@ void timer_impl::remove_timer(const long timer_id)
     else {
         m_timers.erase(it);
     }
+    */
 }
 
 }

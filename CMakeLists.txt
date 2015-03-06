@@ -57,10 +57,10 @@ function(build_example NAME)
     target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1)
     add_dependencies(${NAME}-client dboost dboost_test_${NAME})
     set_property(TARGET dboost_test_${NAME} ${NAME}-server ${NAME}-client 
-	    APPEND PROPERTY INCLUDE_DIRECTORIES ${DSTPATH} ${PROJECT_SOURCE_DIR}/${DES_PATH})
+      APPEND PROPERTY INCLUDE_DIRECTORIES ${DSTPATH} ${PROJECT_SOURCE_DIR}/${DES_PATH})
 
 endfunction(build_example)
 
 build_example(01-basic-scenario)
 build_example(05-struct-passing)
-#build_example(02-observer)
+build_example(02-observer)
