@@ -17,20 +17,25 @@
 
 using namespace std;
 
+namespace dboost
+{
+
+const char* adaptor_traits<dboost_test::timer_observer>::interface_name = "org.dboost.timerobserver";
+
+}
+
 namespace dboost_test
 {
 
-const char* timer_observer_adaptor::INTERFACE_NAME = "org.dboost.timerobserver";
+const char* timer_observer_adaptor::INTERFACE_NAME = dboost::adaptor_traits<dboost_test::timer_observer>::interface_name;
 
 timer_observer_adaptor::timer_observer_adaptor(dboost::server& s)
     : m_server(s)
 {
-    m_server.register_adaptor(this, timer_observer_adaptor::INTERFACE_NAME);
 }
 
 timer_observer_adaptor::~timer_observer_adaptor()
 {
-    m_server.unregister_adaptor(this, timer_observer_adaptor::INTERFACE_NAME);
 }
 
 DBusHandlerResult
@@ -84,7 +89,6 @@ timer_observer_adaptor::add_object(dboost_test::timer_observer* t,
                                    const std::string& name)
 {
     clog << __FUNCTION__ << endl;
-    m_server.register_object(name);
     m_objects[name] = t;
 }
 
@@ -94,9 +98,18 @@ timer_observer_adaptor::remove_object(const std::string& name)
     clog << __FUNCTION__ << endl;
     auto it = m_objects.find(name);
     if (it != m_objects.end()) {
-        m_server.unregister_object(name);
         m_objects.erase(it);
     }
+}
+
+std::string timer_observer_adaptor::get_object_name(timer_observer* ptr)
+{
+    for (auto obj: m_objects) {
+        if (obj.second == ptr) {
+            return obj.first;
+        }
+    }
+    throw dboost::exception("Could not find object");
 }
 
 dboost::dbus_ptr<DBusMessage>

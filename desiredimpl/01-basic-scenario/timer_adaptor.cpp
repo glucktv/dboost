@@ -17,20 +17,27 @@
 
 using namespace std;
 
+namespace dboost
+{
+
+const char* adaptor_traits<dboost_test::timer>::interface_name = "org.dboost.timer";
+
+}
+
 namespace dboost_test
 {
 
-const char* timer_adaptor::INTERFACE_NAME = "org.dboost.timer";
+const char* timer_adaptor::INTERFACE_NAME = dboost::adaptor_traits<dboost_test::timer>::interface_name;
 
 timer_adaptor::timer_adaptor(dboost::server& s)
     : m_server(s)
 {
-    m_server.register_adaptor(this, timer_adaptor::INTERFACE_NAME);
+//    m_server.register_adaptor(this, timer_adaptor::INTERFACE_NAME);
 }
 
 timer_adaptor::~timer_adaptor()
 {
-    m_server.unregister_adaptor(this, timer_adaptor::INTERFACE_NAME);
+//    m_server.unregister_adaptor(this, timer_adaptor::INTERFACE_NAME);
 }
 
 DBusHandlerResult timer_adaptor::handle_message(DBusConnection* connection, DBusMessage* message)
@@ -79,7 +86,6 @@ DBusHandlerResult timer_adaptor::handle_message(DBusConnection* connection, DBus
 void timer_adaptor::add_object(dboost_test::timer* t, const std::string& name)
 {
     clog << __FUNCTION__ << endl;
-    m_server.register_object(name);
     m_objects[name] = t;
 }
 
@@ -88,7 +94,6 @@ void timer_adaptor::remove_object(const std::string& name)
     clog << __FUNCTION__ << endl;
     auto it = m_objects.find(name);
     if (it != m_objects.end()) {
-        m_server.unregister_object(name);
         m_objects.erase(it);
     }
 }

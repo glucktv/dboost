@@ -6,8 +6,7 @@ int main()
 {
     dboost::server s("org.dboost.basicscenario");
     dboost_test::timer_impl t;
-    dboost_test::timer_adaptor ta(s);
-    ta.add_object(&t, "/org/dboost/timer/0");
+    s.register_object<dboost_test::timer>(&t, "/org/dboost/timer/0");
     s.run();
     return 0;
 }

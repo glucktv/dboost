@@ -1,4 +1,6 @@
 #include <timer_proxy.h>
+#include <timer_observer_proxy.h>
+#include <timer_observer_adaptor.h>
 #include <dbus/dbus.h>                    
 #include <exception.h>
 #include <iostream>
@@ -10,9 +12,10 @@ namespace dboost_test
 const char* timer_proxy::s_ifc_name = "org.dboost.timer";
 const int TIMEOUT_MS = 5000;
 
-timer_proxy::timer_proxy(dboost::dbus_ptr<DBusConnection> conn,
+timer_proxy::timer_proxy(dboost::server& server,
     			const std::string& bus_name, const std::string& obj_name)
-    : m_connection(conn),
+    : m_server(server),
+      m_connection(m_server.get_connection()),
       m_bus_name(bus_name),
       m_obj_name(obj_name)
 {
@@ -25,6 +28,14 @@ long timer_proxy::add_timer(const long a0, dboost::ref<timer_observer> a1)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "add_timer")));
     dboost::oserializer os(msg.get());
     os & a0;
+
+    timer_observer_proxy* p1 = dynamic_cast<timer_observer_proxy*>(&a1);
+    if (p1 != nullptr) {
+        os & p1->get_bus_name() & p1->get_obj_name();
+    }
+    else {
+        os & m_server.get_unique_name() & m_server.get_object_name(&a1);
+    }
 
     // call synchronously
     dboost::error err;
@@ -49,6 +60,13 @@ void timer_proxy::remove_timer(dboost::ref<timer_observer> a0)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "remove_timer")));
     dboost::oserializer os(msg.get());
     //os & a0;
+    timer_observer_proxy* p0 = dynamic_cast<timer_observer_proxy*>(&a0);
+    if (p0 != nullptr) {
+        os & p0->get_bus_name() & p0->get_obj_name();
+    }
+    else {
+        os & m_server.get_unique_name() & m_server.get_object_name(&a0);
+    }
 
     // call synchronously
     dboost::error err;

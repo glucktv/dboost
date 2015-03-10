@@ -25,8 +25,21 @@ timer_observer_proxy::timer_observer_proxy(dboost::dbus_ptr<DBusConnection> conn
 {
 }
 
-void dboost_test::timer_observer_proxy::on_timeout()
+std::string timer_observer_proxy::get_bus_name() const
 {
+    return m_bus_name;
+}
+
+std::string timer_observer_proxy::get_obj_name() const
+{
+    return m_obj_name;
+}
+
+void timer_observer_proxy::on_timeout()
+{
+    using namespace std;
+    clog << __FUNCTION__ << "bus = " << m_bus_name << " obj = " << m_obj_name << endl;
+
     // create caller (name, arguments)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "on_timeout")));
 

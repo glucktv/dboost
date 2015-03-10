@@ -41,16 +41,14 @@ server::~server()
     dbus_bus_release_name(m_connection.get(), m_name.c_str(), &err);
 }
 
-void server::register_object(const std::string& name)
+dbus_ptr<DBusConnection> server::get_connection()
 {
-    clog << __FUNCTION__ << " name = " << name << endl;
-    DBOOST_CHECK(dbus_connection_register_object_path(m_connection.get(), name.c_str(), &s_vtbl, this));
+    return m_connection;
 }
 
-void server::unregister_object(const std::string& name)
+std::string server::get_unique_name()
 {
-    clog << __FUNCTION__ << " name = " << name << endl;
-	DBOOST_CHECK(dbus_connection_unregister_object_path(m_connection.get(), name.c_str()));
+    return dbus_bus_get_unique_name(m_connection.get());
 }
 
 DBusHandlerResult
@@ -80,6 +78,7 @@ void server::run()
     while (dbus_connection_read_write_dispatch (m_connection.get(), -1));
 }
 
+#if 0
 void server::register_adaptor(adaptor* a, const std::string& ifc_name)
 {
     clog << __FUNCTION__ << " ifc = " << ifc_name << endl;
@@ -97,6 +96,20 @@ void server::unregister_adaptor(adaptor* /*a*/, const std::string& ifc_name)
         m_adaptors.erase(iter);
     }
 }
+
+void server::register_object(const std::string& name)
+{
+    clog << __FUNCTION__ << " name = " << name << endl;
+    DBOOST_CHECK(dbus_connection_register_object_path(m_connection.get(), name.c_str(), &s_vtbl, this));
+}
+
+void server::unregister_object(const std::string& name)
+{
+    clog << __FUNCTION__ << " name = " << name << endl;
+    DBOOST_CHECK(dbus_connection_unregister_object_path(m_connection.get(), name.c_str()));
+}
+#endif
+
 
 } // namespace dboost
 

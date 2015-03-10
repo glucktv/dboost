@@ -3,6 +3,8 @@
 
 #include <timer.hpp>
 #include <dbus_ptr.h>
+#include <ref.h>
+#include <server.h>
 
 namespace dboost_test
 {
@@ -10,12 +12,13 @@ namespace dboost_test
 class timer_proxy: virtual public dboost_test::timer
 {
 public:
-  timer_proxy(dboost::dbus_ptr<DBusConnection> conn, const std::string& bus_name, const std::string& obj_name);
+  timer_proxy(dboost::server& s, const std::string& bus_name, const std::string& obj_name);
 
   virtual long add_timer(const long timeout_ms, dboost::ref<timer_observer> obs) override;
   virtual void remove_timer(dboost::ref<timer_observer> obs) override;
 
 private:
+  dboost::server& m_server;
   dboost::dbus_ptr<DBusConnection> m_connection;
   const std::string m_bus_name;
   const std::string m_obj_name;

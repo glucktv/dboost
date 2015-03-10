@@ -6,7 +6,7 @@
  */
 
 #include "timer_adaptor.h"
-#include "timer_observer_adaptor.h"
+#include "timer_observer_proxy.h"
 #include "server.h"
 #include "exception.h"
 #include <dbus/dbus.h>
@@ -15,23 +15,29 @@
 #include <iostream>
 #include <serializer.h>
 #include <map>
+#include <ref.h>
 
 using namespace std;
+
+namespace dboost
+{
+
+const char* adaptor_traits<dboost_test::timer>::interface_name = "org.dboost.timer";
+
+}
 
 namespace dboost_test
 {
 
-const char* timer_adaptor::INTERFACE_NAME = "org.dboost.timer";
+const char* timer_adaptor::INTERFACE_NAME = dboost::adaptor_traits<dboost_test::timer>::interface_name;
 
 timer_adaptor::timer_adaptor(dboost::server& s)
     : m_server(s)
 {
-    m_server.register_adaptor(this, timer_adaptor::INTERFACE_NAME);
 }
 
 timer_adaptor::~timer_adaptor()
 {
-    m_server.unregister_adaptor(this, timer_adaptor::INTERFACE_NAME);
 }
 
 DBusHandlerResult timer_adaptor::handle_message(DBusConnection* connection, DBusMessage* message)
@@ -80,7 +86,6 @@ DBusHandlerResult timer_adaptor::handle_message(DBusConnection* connection, DBus
 void timer_adaptor::add_object(dboost_test::timer* t, const std::string& name)
 {
     clog << __FUNCTION__ << endl;
-    m_server.register_object(name);
     m_objects[name] = t;
 }
 
@@ -89,7 +94,6 @@ void timer_adaptor::remove_object(const std::string& name)
     clog << __FUNCTION__ << endl;
     auto it = m_objects.find(name);
     if (it != m_objects.end()) {
-        m_server.unregister_object(name);
         m_objects.erase(it);
     }
 }
@@ -101,11 +105,10 @@ dboost::dbus_ptr<DBusMessage> timer_adaptor::call_add_timer(dboost_test::timer* 
     dboost::iserializer is(m);
     long a0;
     is & a0;
-
-    // *****
-    // TODO: pass object reference here!
-    // *****
-    dboost::ref<timer_observer> a1;
+    std::string a1bus;
+    std::string a1obj;
+    is & a1bus & a1obj;
+    dboost::ref<timer_observer> a1(new timer_observer_proxy(m_server.get_connection(), a1bus, a1obj), true);
     long r = t->add_timer(a0, a1);
     dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
     dboost::oserializer os(result.get());
@@ -118,7 +121,10 @@ dboost::dbus_ptr<DBusMessage> timer_adaptor::call_remove_timer(dboost_test::time
     clog << __FUNCTION__ << endl;
     assert(t && m);
     dboost::iserializer is(m);
-    dboost::ref<timer_observer> a0;
+    std::string a0bus;
+    std::string a0obj;
+    is & a0bus & a0obj;
+    dboost::ref<timer_observer> a0(new timer_observer_proxy(m_server.get_connection(), a0bus, a0obj), true);
     t->remove_timer(a0);
     dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
     return result;

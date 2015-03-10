@@ -19,6 +19,8 @@ class timer_observer_proxy: public virtual timer_observer
 public:
     timer_observer_proxy(dboost::dbus_ptr<DBusConnection> conn, const std::string& bus_name, const std::string& obj_name);
     void on_timeout() override;
+    std::string get_bus_name() const;
+    std::string get_obj_name() const;
 
 private:
     dboost::dbus_ptr<DBusConnection> m_connection;

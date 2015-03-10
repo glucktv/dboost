@@ -10,6 +10,16 @@
 
 #include <adaptor.h>
 #include <timer.hpp>
+#include <string>
+#include <map>
+#include <dbus_ptr.h>
+
+namespace dboost
+{
+
+class server;
+
+}
 
 namespace dboost_test
 {
@@ -24,6 +34,7 @@ public:
 
     void add_object(dboost_test::timer_observer* t, const std::string& name);
     void remove_object(const std::string& name);
+    std::string get_object_name(timer_observer* ptr);
 
 private:
     dboost::server& m_server;
@@ -36,5 +47,17 @@ private:
 };
 
 } // namespace dboost_test
+
+namespace dboost
+{
+
+template <>
+struct adaptor_traits<dboost_test::timer_observer>
+{
+    typedef dboost_test::timer_observer_adaptor type;
+    static const char* interface_name;
+};
+
+}
 
 #endif /* TIMER_OBSERVER_ADAPTOR_H_ */

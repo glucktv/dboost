@@ -154,7 +154,7 @@ struct serialization_strategy<T, true>
         dbus_message_iter_get_basic(&is, &val);
         dbus_message_iter_next(&is);
     }
-    static void do_serialize(oserializer& os, T& val)
+    static void do_serialize(oserializer& os, const T& val)
     {
         DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<T>::id, &val));
     }
@@ -179,7 +179,7 @@ struct serialization_strategy<std::string, true>
         val = ptr;
         dbus_message_iter_next(&is);
     }
-    static void do_serialize(oserializer& os, std::string& val)
+    static void do_serialize(oserializer& os, const std::string& val)
     {
         auto ptr = val.c_str();
         DBOOST_CHECK(dbus_message_iter_append_basic(&os, type_traits<std::string>::id, &ptr));
@@ -209,7 +209,7 @@ struct serialization_strategy<std::vector<T>, false>
         }
     }
 
-    static void do_serialize(oserializer& os, std::vector<T>& val)
+    static void do_serialize(oserializer& os, const std::vector<T>& val)
     {
         // we don't need to add 'a' prefix as it is added automatically
         type_collector c;
@@ -222,7 +222,7 @@ struct serialization_strategy<std::vector<T>, false>
         }
     }
 
-    static void do_serialize(type_collector& tc, std::vector<T>& val)
+    static void do_serialize(type_collector& tc, const std::vector<T>& val)
     {
         tc << "a(";
         tc & *static_cast<T*>(0);
@@ -256,7 +256,18 @@ A& operator&(A& a, T& t)
     const int type_id = type_traits<type>::id;
     const bool integral = is_integral<type_id>::flag;
     typedef serialization_strategy<type, integral> strategy;
-    strategy::do_serialize(a, const_cast<type&>(t));
+    strategy::do_serialize(a, t);
+    return a;
+}
+
+template <typename A, typename T>
+A& operator&(A& a, const T& t)
+{
+    typedef typename remove_const<T>::type type;
+    const int type_id = type_traits<type>::id;
+    const bool integral = is_integral<type_id>::flag;
+    typedef serialization_strategy<type, integral> strategy;
+    strategy::do_serialize(a, t);
     return a;
 }
 

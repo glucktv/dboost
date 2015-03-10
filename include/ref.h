@@ -26,9 +26,13 @@ public:
     ref(const ref& oth) = default;
     ~ref() = default;
     ref& operator= (const ref& oth) = default;
-    operator T&()
+    T* operator&()
     {
-        return *m_refee.get();
+        return m_refee.get();
+    }
+    T& get()
+    {
+        return *(m_refee.get());
     }
 
 private:

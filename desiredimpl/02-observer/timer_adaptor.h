@@ -10,6 +10,9 @@
 
 #include <adaptor.h>
 #include <timer.hpp>
+#include <string>
+#include <map>
+#include <dbus_ptr.h>
 
 namespace dboost
 {
@@ -39,6 +42,18 @@ private:
     dboost::dbus_ptr<DBusMessage> call_remove_timer(dboost_test::timer* t, DBusMessage* m);
 
     static const char* INTERFACE_NAME;
+};
+
+}
+
+namespace dboost
+{
+
+template <>
+struct adaptor_traits<dboost_test::timer>
+{
+    typedef dboost_test::timer_adaptor type;
+    static const char* interface_name;
 };
 
 }

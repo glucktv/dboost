@@ -27,11 +27,10 @@ void observer::on_timeout()
 
 int main()
 {
-	dboost_test::timer_proxy p(create_connection(), "org.dboost.observer.server", "/org/dboost/timer/0");
-	dboost::server s("org.dboost.observer.client");
-	dboost_test::timer_observer_adaptor toa(s);
+    dboost::server s("org.dboost.observer.client");
+	dboost_test::timer_proxy p(s, "org.dboost.observer.server", "/org/dboost/timer/0");
 	observer obs;
-	toa.add_object(&obs, "org.dboost.timer.observer.1");
+	s.register_object<dboost_test::timer_observer>(&obs, "/org/dboost/timer/observer/1");
 
 	long id = p.add_timer(100500, &obs);
 	cout << "Got id = " << id << endl;
@@ -40,6 +39,6 @@ int main()
 	usleep(5000 * 1000);
 
 	p.remove_timer(&obs);
-
+	usleep(5000 * 1000);
     return 0;
 }
