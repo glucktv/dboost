@@ -4,7 +4,7 @@ OMNIIDL := omniidl
 BE_PATH := -p ../../buildtools/idl/backends
 
 %.hpp : %.idl
-	$(OMNIIDL) $(BE_PATH) -bcppbackend -K $^
+	$(OMNIIDL) $(BE_PATH) -bcxxbackend -K $^
 
 all : $(patsubst %.idl,%.hpp,$(wildcard *.idl))
 
