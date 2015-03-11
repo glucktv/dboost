@@ -34,4 +34,4 @@ private:
 
 } // namespace dboost_test
 
-#endif /* TIMER_OBSERVER_ADAPTOR_H_ */
+#endif // TIMER_OBSERVER_ADAPTOR_H_
