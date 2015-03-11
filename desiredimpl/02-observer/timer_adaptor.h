@@ -43,4 +43,4 @@ private:
 
 }
 
-#endif /* TIMER_ADAPTOR_H_ */
+#endif // TIMER_ADAPTOR_H_
