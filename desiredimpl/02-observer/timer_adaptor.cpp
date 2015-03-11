@@ -15,7 +15,7 @@
 #include <iostream>
 #include <serializer.h>
 #include <map>
-#include <ref.h>
+#include <ptr.h>
 
 using namespace std;
 
@@ -108,7 +108,7 @@ dboost::dbus_ptr<DBusMessage> timer_adaptor::call_add_timer(dboost_test::timer* 
     std::string a1bus;
     std::string a1obj;
     is & a1bus & a1obj;
-    dboost::ref<timer_observer> a1(new timer_observer_proxy(m_server.get_connection(), a1bus, a1obj), true);
+    dboost::ptr<timer_observer> a1(new timer_observer_proxy(m_server.get_connection(), a1bus, a1obj), true);
     long r = t->add_timer(a0, a1);
     dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
     dboost::oserializer os(result.get());
@@ -124,7 +124,7 @@ dboost::dbus_ptr<DBusMessage> timer_adaptor::call_remove_timer(dboost_test::time
     std::string a0bus;
     std::string a0obj;
     is & a0bus & a0obj;
-    dboost::ref<timer_observer> a0(new timer_observer_proxy(m_server.get_connection(), a0bus, a0obj), true);
+    dboost::ptr<timer_observer> a0(new timer_observer_proxy(m_server.get_connection(), a0bus, a0obj), true);
     t->remove_timer(a0);
     dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
     return result;

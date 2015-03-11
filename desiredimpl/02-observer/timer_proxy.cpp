@@ -22,19 +22,19 @@ timer_proxy::timer_proxy(dboost::server& server,
 }
 
 // here arguments are called a0 .. aN to avoid naming clashes, result is called r
-long timer_proxy::add_timer(const long a0, dboost::ref<timer_observer> a1)
+long timer_proxy::add_timer(const long a0, dboost::ptr<timer_observer> a1)
 {
     // create caller (name, arguments)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "add_timer")));
     dboost::oserializer os(msg.get());
     os & a0;
 
-    timer_observer_proxy* p1 = dynamic_cast<timer_observer_proxy*>(&a1);
+    timer_observer_proxy* p1 = dynamic_cast<timer_observer_proxy*>(a1.get());
     if (p1 != nullptr) {
         os & p1->get_bus_name() & p1->get_obj_name();
     }
     else {
-        os & m_server.get_unique_name() & m_server.get_object_name(&a1);
+        os & m_server.get_unique_name() & m_server.get_object_name(a1.get());
     }
 
     // call synchronously
@@ -54,18 +54,18 @@ long timer_proxy::add_timer(const long a0, dboost::ref<timer_observer> a1)
     return r;
 }
 
-void timer_proxy::remove_timer(dboost::ref<timer_observer> a0)
+void timer_proxy::remove_timer(dboost::ptr<timer_observer> a0)
 {
     // create caller (name, arguments)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "remove_timer")));
     dboost::oserializer os(msg.get());
     //os & a0;
-    timer_observer_proxy* p0 = dynamic_cast<timer_observer_proxy*>(&a0);
+    timer_observer_proxy* p0 = dynamic_cast<timer_observer_proxy*>(a0.get());
     if (p0 != nullptr) {
         os & p0->get_bus_name() & p0->get_obj_name();
     }
     else {
-        os & m_server.get_unique_name() & m_server.get_object_name(&a0);
+        os & m_server.get_unique_name() & m_server.get_object_name(a0.get());
     }
 
     // call synchronously

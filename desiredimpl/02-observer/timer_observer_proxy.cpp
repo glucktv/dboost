@@ -38,13 +38,14 @@ std::string timer_observer_proxy::get_obj_name() const
 void timer_observer_proxy::on_timeout()
 {
     using namespace std;
-    clog << __FUNCTION__ << "bus = " << m_bus_name << " obj = " << m_obj_name << endl;
+    clog << __FUNCTION__ << " bus = " << m_bus_name << " obj = " << m_obj_name << endl;
 
     // create caller (name, arguments)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "on_timeout")));
 
     // call asynchronously
-    dbus_connection_send(m_connection.get(), msg.get(), nullptr);
+    dboost::error err;
+    dbus_connection_send_with_reply_and_block(m_connection.get(), msg.get(), 5000, &err);
 }
 
 } // namespace dboost_test

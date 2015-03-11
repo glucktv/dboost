@@ -33,10 +33,11 @@ int main()
 	s.register_object<dboost_test::timer_observer>(&obs, "/org/dboost/timer/observer/1");
 
 	long id = p.add_timer(100500, &obs);
+
 	cout << "Got id = " << id << endl;
 
-
-	usleep(5000 * 1000);
+	s.run();
+	//usleep(5000 * 1000);
 
 	p.remove_timer(&obs);
 	usleep(5000 * 1000);

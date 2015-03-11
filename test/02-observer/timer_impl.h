@@ -12,12 +12,12 @@ class timer_impl: public timer
 {
 public:
     timer_impl(): m_last_id(0) {}
-    virtual long add_timer(const long timeout_ms, dboost::ref<timer_observer> obs) override;
-    virtual void remove_timer(dboost::ref<timer_observer> obs) override;
+    virtual long add_timer(const long timeout_ms, dboost::ptr<timer_observer> obs) override;
+    virtual void remove_timer(dboost::ptr<timer_observer> obs) override;
 
 private:
     long m_last_id;
-    std::map<long/*id*/, long/*timeout*/> m_timers;    
+    std::map<long/*id*/, dboost::ptr<timer_observer>> m_timers;
 };
 
 };
