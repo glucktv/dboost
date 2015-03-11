@@ -22,7 +22,7 @@
 namespace dboost
 {
 
-//class adaptor;
+class dispatcher;
 
 class server
 {
@@ -41,15 +41,22 @@ public:
     dbus_ptr<DBusConnection> get_connection();
     std::string get_unique_name();
 
+    void set_dispatcher(dispatcher* w);
+
 private:
     const std::string m_name;
     dbus_ptr<DBusConnection> m_connection;
     std::map<std::string, std::unique_ptr<adaptor>> m_adaptors;
     static DBusObjectPathVTable s_vtbl;
+
     static DBusHandlerResult message_func(DBusConnection* connection,
         DBusMessage* message, void* user_data);
     DBusHandlerResult message_func_impl(DBusConnection* connection,
     	DBusMessage* message);
+
+    static dbus_bool_t add_watch(DBusWatch* watch, void* data);
+    static void remove_watch(DBusWatch* watch, void* data);
+    static void watch_toggled(DBusWatch* watch, void* data);
 
 };
 

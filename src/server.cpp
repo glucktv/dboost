@@ -13,6 +13,7 @@
 #include <iostream>
 #include <dbus/dbus.h>
 #include <utils.h>
+#include <dispatcher.h>
 
 namespace dboost
 {
@@ -60,6 +61,17 @@ server::message_func(DBusConnection* connection, DBusMessage* message,
     return s->message_func_impl(connection, message);
 }
 
+void
+server::set_dispatcher(dispatcher* w)
+{
+    DBOOST_CHECK(dbus_connection_set_watch_functions(m_connection.get(),
+                                                     &server::add_watch,
+                                                     &server::remove_watch,
+                                                     &server::watch_toggled,
+                                                     w,
+                                                     nullptr));
+}
+
 DBusHandlerResult
 server::message_func_impl(DBusConnection* connection, DBusMessage* message)
 {
@@ -77,6 +89,27 @@ void server::run()
 {
     while (dbus_connection_read_write_dispatch (m_connection.get(), -1)) clog << __FUNCTION__ << endl;
     clog << __FUNCTION__ << " end!" << endl;
+}
+
+dbus_bool_t server::add_watch(DBusWatch* w, void* data)
+{
+    dispatcher* d = reinterpret_cast<dispatcher*>(data);
+    assert(d != nullptr);
+    d->add_watch(w);
+}
+
+void server::remove_watch(DBusWatch* w, void* data)
+{
+    dispatcher* d = reinterpret_cast<dispatcher*>(data);
+    assert(d != nullptr);
+    d->remove_watch(w);
+}
+
+void server::watch_toggled(DBusWatch* w, void* data)
+{
+    dispatcher* d = reinterpret_cast<dispatcher*>(data);
+    assert(d != nullptr);
+    d->watch_toggled(w);
 }
 
 } // namespace dboost
