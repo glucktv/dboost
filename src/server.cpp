@@ -13,6 +13,7 @@
 #include <iostream>
 #include <dbus/dbus.h>
 #include <utils.h>
+#include <dispatcher.h>
 
 namespace dboost
 {
@@ -25,9 +26,9 @@ DBusObjectPathVTable server::s_vtbl = {
     nullptr
 };
 
-server::server(const std::string& name)
+server::server(dbus_ptr<DBusConnection> connection, const std::string& name)
     : m_name(name),
-      m_connection(create_connection())
+      m_connection(connection)
 {
     error err;
     if (dbus_bus_request_name(m_connection.get(), m_name.c_str(), 0, &err) == -1) {
@@ -51,6 +52,17 @@ void server::unregister_object(const std::string& name)
 {
     clog << __FUNCTION__ << " name = " << name << endl;
 	DBOOST_CHECK(dbus_connection_unregister_object_path(m_connection.get(), name.c_str()));
+}
+
+void
+server::set_dispatcher(dispatcher* disp)
+{
+    DBOOST_CHECK(dbus_connection_set_watch_functions(m_connection.get(),
+                                                     &server::add_watch,
+						     &server::remove_watch,
+						     &server::watch_toggled,
+						     disp,
+						     nullptr));
 }
 
 DBusHandlerResult
@@ -96,6 +108,27 @@ void server::unregister_adaptor(adaptor* /*a*/, const std::string& ifc_name)
     else {
         m_adaptors.erase(iter);
     }
+}
+
+dbus_bool_t server::add_watch(DBusWatch* w, void* data)
+{
+    dispatcher* d = reinterpret_cast<dispatcher*>(data);
+    assert(d != nullptr);
+    return d->add_watch(w);
+}
+
+void server::remove_watch(DBusWatch* w, void* data)
+{
+    dispatcher* d = reinterpret_cast<dispatcher*>(data);
+    assert(d != nullptr);
+    d->remove_watch(w);
+}
+
+void server::watch_toggled(DBusWatch* w, void* data)
+{
+    dispatcher* d = reinterpret_cast<dispatcher*>(data);
+    assert(d != nullptr);
+    d->watch_toggled(w);
 }
 
 } // namespace dboost

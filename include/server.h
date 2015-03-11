@@ -18,11 +18,12 @@ namespace dboost
 {
 
 class adaptor;
+class dispatcher;
 
 class server
 {
 public:
-    server(const std::string& name);
+    server(dbus_ptr<DBusConnection> connection, const std::string& name);
     ~server();
 
     void register_adaptor(adaptor* a, const std::string& ifcname);
@@ -32,6 +33,7 @@ public:
     void unregister_object(const std::string& name);
 
     void run();
+    void set_dispatcher(dispatcher* disp);
 
 private:
     const std::string m_name;
@@ -43,6 +45,9 @@ private:
     DBusHandlerResult message_func_impl(DBusConnection* connection,
     	                   DBusMessage* message);
 
+    static dbus_bool_t add_watch(DBusWatch* watch, void* data);
+    static void remove_watch(DBusWatch* watch, void* data);
+    static void watch_toggled(DBusWatch* watch, void* data);
 };
 
 } // namespace dboost
