@@ -5,6 +5,7 @@ out = defaultdict(dict)
 out['AdapterHeader']['head'] = """#ifndef @ig@
 #define @ig@
 #include <map>
+#include <dbus/dbus.h>
 #include <dbus_ptr.h>
 #include <@suffix@.h>
 #include <@interface@.hpp>

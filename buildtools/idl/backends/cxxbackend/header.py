@@ -4,47 +4,6 @@ import string
 from omniidl import idlast, idltype, idlutil, idlvisitor, output
 from cxxbackend import tools
 
-class HeadersAggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-
-    def __init__(self, main):
-        self.includes = set([])
-        self.stdincludes = set([])
-        self.main = main
-    def getIncludes(self):
-        return (self.includes, self.stdincludes)
-
-    def visitAST(self, node):
-        for d in node.declarations():
-            if not d.mainFile():
-                self.includes.add(d.file())
-                d.accept(self)
-            else:
-                d.accept(self)
-
-    def visitModule(self, node):
-        for n in node.definitions():
-            n.accept(self)
-
-    def visitInterface(self, node):
-        for n in node.contents():
-            n.accept(self)
-
-    def visitTypedef(self, node):
-        node.aliasType().accept(self)
-
-    def visitSequenceType(self, node):
-        self.stdincludes.add("vector")
-
-    def visitWStringType(self, node):
-        self.stdincludes.add("wstring")
-
-    def visitStringType(self, node):
-        self.stdincludes.add("string")
-
-    def visitStruct(self, node):
-        for m in node.members():
-            m.memberType().accept(self)
-
 class Header (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     def __init__(self, st, includes, stdincludes):
         self.st = st
@@ -97,7 +56,7 @@ namespace @id@
 class @id@ @inherits@
 {
 public:
-  virtual ~@id@() {}""",
+  virtual ~@id@() {};""",
                     id = node.identifier(), inherits=inherits)
 
         self.st.inc_indent()
@@ -310,7 +269,7 @@ virtual @rtype@ @id@(@params@)@raises@ = 0;""",
         self.__result_type = "std:wstring"
 
 def run(tree, args):
-    ha = HeadersAggregator(tree.file());
+    ha = tools.Aggregator()
     tree.accept(ha)
     includes, stdincludes = ha.getIncludes()
     includes = map(lambda i: os.path.splitext(i)[0], includes)

@@ -18,11 +18,17 @@ ttsMap = {
     idltype.tk_wchar:      "wchar"
 }
 
-class InterfacesAggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-
-    def __init__(self, main):
+class Aggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
+    def __init__(self):
+        self.structs = set([])
         self.interfaces = set([])
-        self.main = main
+        self.includes = set([])
+        self.stdincludes = set([])
+
+    def getIncludes(self):
+        return (self.includes, self.stdincludes)
+    def getStructs(self):
+        return self.structs
     def getInterfaces(self):
         return self.interfaces
 
@@ -42,3 +48,20 @@ class InterfacesAggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         for n in node.contents():
             n.accept(self)
         self.interfaces.add(node.identifier())
+
+    def visitStruct(self, node):
+        for n in node.members():
+            n.accept(self)
+        self.structs.add(node.identifier())
+
+    def visitTypedef(self, node):
+        node.aliasType().accept(self)
+
+    def visitSequenceType(self, node):
+        self.stdincludes.add("vector")
+
+    def visitWStringType(self, node):
+        self.stdincludes.add("wstring")
+
+    def visitStringType(self, node):
+        self.stdincludes.add("string")

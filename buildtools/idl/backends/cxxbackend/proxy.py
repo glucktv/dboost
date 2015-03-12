@@ -111,7 +111,7 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     pass
 
 def run(tree, args, templates, suffix):
-    ia = tools.InterfacesAggregator(tree.file());
+    ia = tools.Aggregator()
     tree.accept(ia)
     interfaces = ia.getInterfaces()
 

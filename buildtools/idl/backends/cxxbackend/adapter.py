@@ -65,7 +65,7 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.st = st
 
 def run(tree, args, templates, suffix):
-    ia = tools.InterfacesAggregator(tree.file())
+    ia = tools.Aggregator()
     tree.accept(ia)
     interfaces = ia.getInterfaces()
 

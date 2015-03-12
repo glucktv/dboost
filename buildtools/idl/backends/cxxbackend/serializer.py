@@ -1,6 +1,7 @@
 import os
 
 from omniidl import idlast, idltype, idlutil, idlvisitor, output
+from cxxbackend import tools
 
 class Serializer (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     def __init__(self, st, templates, suffix):
@@ -40,6 +41,10 @@ namespace @id@
         self.st.out(self.templates[self.__class__.__name__]['struct'], struct=node.identifier(), members=memberss)
 
 def run(tree, args, templates, suffix):
+    sa = tools.Aggregator()
+    tree.accept(sa)
+    if len(sa.getStructs()) == 0:
+        return
     name, ext = os.path.splitext(os.path.basename(tree.file()))
     with open(name + '_' + suffix + '.hpp', 'w') as header:
         st = output.Stream(header, 2)
