@@ -12,30 +12,38 @@
 namespace dboost {
 
 using namespace boost::asio;
+using namespace std;
 
-boost_dispatcher::boost_dispatcher(boost::asio::io_service& ios)
-    : m_io_service(ios)
+boost_dispatcher::boost_dispatcher(boost::asio::io_service& ios, dbus_ptr<DBusConnection> c)
+    : m_io_service(ios),
+      m_connection(c)
 {
 }
 
 dbus_bool_t boost_dispatcher::add_watch(DBusWatch* w)
 {
     std::clog << __FUNCTION__ << " fd = " << dbus_watch_get_unix_fd(w)
-              << " enabled = " << dbus_watch_get_enabled(w) << std::endl;
+              << " enabled = " << dbus_watch_get_enabled(w)
+              << " flags = " << dbus_watch_get_flags(w)
+              << " this = " << (intptr_t)(w)
+              << std::endl;
 
     if (!dbus_watch_get_enabled(w)) {
         return true;
     }
 
-    std::unique_ptr<posix::stream_descriptor> d(
-        new posix::stream_descriptor(m_io_service, dbus_watch_get_unix_fd(w)));
-    bool status = d.get() != nullptr;
-    dbus_watch_set_data(w, d.release(), nullptr);
+    int fd = dbus_watch_get_unix_fd(w);
+    auto iter = m_descriptors.find(fd);
+    if (iter == m_descriptors.end()) {
+        auto result = m_descriptors.insert(
+            make_pair(fd, posix::stream_descriptor(m_io_service, fd)));
+        iter = result.first;
+        dbus_watch_set_data(w, &iter->second, nullptr);
+    }
+
     resubscribe(w);
-
     std::clog << __FUNCTION__ << " end" << std::endl;
-
-    return status;
+    return true;
 }
 
 void boost_dispatcher::remove_watch(DBusWatch* w)
@@ -49,7 +57,14 @@ void boost_dispatcher::remove_watch(DBusWatch* w)
 
 void boost_dispatcher::watch_toggled(DBusWatch* w)
 {
-    resubscribe(w);
+    //resubscribe(w);
+    std::clog << __FUNCTION__ << std::endl;
+    if (dbus_watch_get_enabled(w)) {
+        add_watch(w);
+    }
+    else {
+        remove_watch(w);
+    }
 }
 
 void boost_dispatcher::resubscribe(DBusWatch* watch)
@@ -60,19 +75,16 @@ void boost_dispatcher::resubscribe(DBusWatch* watch)
         reinterpret_cast<posix::stream_descriptor*>(dbus_watch_get_data(watch));
     assert(d);
 
-    if (!dbus_watch_get_enabled(watch)) {
-        std::clog << "disabling" << std::endl;
-        d->cancel();
-    }
-
     using namespace std::placeholders;
     if (flags & DBUS_WATCH_READABLE) {
-      d->async_read_some(null_buffers(),
-                         std::bind(&boost_dispatcher::handle_read, this, _1, watch));
+        std::clog << "read some" << std::endl;
+        d->async_read_some(null_buffers(),
+                           std::bind(&boost_dispatcher::handle_read, this, _1, watch));
     }
     if (flags & DBUS_WATCH_WRITABLE) {
-      d->async_write_some(null_buffers(),
-                          std::bind(&boost_dispatcher::handle_write, this, _1, watch));
+        std::clog << "write some" << std::endl;
+        d->async_write_some(null_buffers(),
+                            std::bind(&boost_dispatcher::handle_write, this, _1, watch));
     }
     std::clog << __FUNCTION__ << " end" << std::endl;
 }
@@ -85,6 +97,7 @@ void boost_dispatcher::handle_read(const boost::system::error_code& e, DBusWatch
     }
     else {
         dbus_watch_handle(w, DBUS_WATCH_READABLE);
+        while (dbus_connection_dispatch(m_connection.get()) == DBUS_DISPATCH_DATA_REMAINS);
         resubscribe(w);
     }
 }
@@ -97,6 +110,7 @@ void boost_dispatcher::handle_write(const boost::system::error_code& e, DBusWatc
     }
     else {
         dbus_watch_handle(w, DBUS_WATCH_WRITABLE);
+        while (dbus_connection_dispatch(m_connection.get()) == DBUS_DISPATCH_DATA_REMAINS);
         resubscribe(w);
     }
 }

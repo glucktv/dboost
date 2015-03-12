@@ -56,13 +56,13 @@ DBusHandlerResult
 server::message_func(DBusConnection* connection, DBusMessage* message,
     				 void* user_data)
 {
+    clog << __FUNCTION__ << endl;
     auto s = reinterpret_cast<server*>(user_data);
     assert(s != nullptr);
     return s->message_func_impl(connection, message);
 }
 
-void
-server::set_dispatcher(dispatcher* w)
+void server::set_dispatcher(dispatcher* w)
 {
     DBOOST_CHECK(dbus_connection_set_watch_functions(m_connection.get(),
                                                      &server::add_watch,
@@ -95,7 +95,7 @@ dbus_bool_t server::add_watch(DBusWatch* w, void* data)
 {
     dispatcher* d = reinterpret_cast<dispatcher*>(data);
     assert(d != nullptr);
-    d->add_watch(w);
+    return d->add_watch(w);
 }
 
 void server::remove_watch(DBusWatch* w, void* data)

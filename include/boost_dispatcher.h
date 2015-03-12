@@ -10,13 +10,14 @@
 
 #include "dispatcher.h"
 #include <boost/asio.hpp>
+#include <dbus_ptr.h>
 
 namespace dboost {
 
 class boost_dispatcher: public dispatcher
 {
 public:
-    boost_dispatcher(boost::asio::io_service& ios);
+    boost_dispatcher(boost::asio::io_service& ios, dbus_ptr<DBusConnection> c);
 
     virtual dbus_bool_t add_watch(DBusWatch*);
     virtual void remove_watch(DBusWatch*);
@@ -24,6 +25,9 @@ public:
 
 private:
     boost::asio::io_service& m_io_service;
+    dbus_ptr<DBusConnection> m_connection;
+    std::map<int, boost::asio::posix::stream_descriptor> m_descriptors;
+
     void resubscribe(DBusWatch* watch);
     void handle_read(const boost::system::error_code& e, DBusWatch* w);
     void handle_write(const boost::system::error_code& e, DBusWatch* w);
