@@ -14,13 +14,7 @@ class AdapterHeader (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
     def visitAST(self, node):
         ig = (self.interface + '_' + self.suffix + '_HPP').upper()
-        self.st.out("""#ifndef @ig@
-#define @ig@
-#include <map>
-#include <dbus_ptr.h>
-#include <@suffix@.h>
-#include <@interface@.hpp>
-""", ig=ig, suffix=self.suffix, interface=self.interface)
+        self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, suffix=self.suffix, interface=self.interface)
 
         for n in node.declarations():
             if n.mainFile():
@@ -50,7 +44,7 @@ namespace @id@
             return
         inherits = 'dboost::' + self.suffix
 
-        self.st.out(self.templates[self.suffix]['interface'],
+        self.st.out(self.templates[self.__class__.__name__]['interface'],
                     id=node.identifier(), inherits=inherits, class_name=self.class_name, ancestor=self.interface)
 
         self.st.inc_indent()
@@ -64,18 +58,17 @@ namespace @id@
 """)
 
     def visitOperation(self, node):
-        self.st.out(self.templates[self.suffix]['operation'], operation=node.identifier(), interface=self.interface)
+        self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(), interface=self.interface)
 
 class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     def __init__(self, st):
         self.st = st
 
-def run(tree, args, templates):
-    ia = tools.InterfacesAggregator(tree.file());
+def run(tree, args, templates, suffix):
+    ia = tools.InterfacesAggregator(tree.file())
     tree.accept(ia)
     interfaces = ia.getInterfaces()
 
-    suffix = 'adapter'
     for interface in interfaces:
         with open(interface + '_' + suffix + '.hpp', 'w') as header:
             st = output.Stream(header, 2)

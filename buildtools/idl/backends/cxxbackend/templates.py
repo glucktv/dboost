@@ -2,7 +2,15 @@ from collections import defaultdict
 
 out = defaultdict(dict)
 
-out['adapter']['interface'] = """\
+out['AdapterHeader']['head'] = """#ifndef @ig@
+#define @ig@
+#include <map>
+#include <dbus_ptr.h>
+#include <@suffix@.h>
+#include <@interface@.hpp>
+"""
+
+out['AdapterHeader']['interface'] = """\
 class @class_name@ : public virtual @inherits@
 {
 public:
@@ -21,9 +29,17 @@ private:
   static const char* INTERFACE_NAME;
 """
 
-out['adapter']['operation'] = """dboost::dbus_ptr<DBusMessage> call_@operation@(dboost_test::@interface@* t, DBusMessage* m);"""
+out['AdapterHeader']['operation'] = """dboost::dbus_ptr<DBusMessage> call_@operation@(dboost_test::@interface@* t, DBusMessage* m);"""
 
-out['proxy']['interface'] = """\
+out['ProxyHeader']['head'] = """\
+#ifndef @ig@
+#define @ig@
+#include <string>
+#include <dbus_ptr.h>
+#include <@interface@.hpp>
+"""
+
+out['ProxyHeader']['interface'] = """\
 class @class_name@: virtual public @inherits@
 {
 private:
@@ -33,7 +49,21 @@ private:
   static const char* s_ifc_name;
 public:
   timer_proxy(dboost::dbus_ptr<DBusConnection> conn, const std::string& bus_name, const std::string& obj_name);
-
 """
 
-out['proxy']['operation'] = """virtual @rtype@ @id@(@params@)@raises@ override;"""
+out['ProxyHeader']['operation'] = """virtual @rtype@ @id@(@params@)@raises@ override;"""
+
+out['Serializer']['head'] = """\
+#ifndef @ig@
+#define @ig@
+
+#include <@interface@.hpp>
+"""
+
+out['Serializer']['struct'] = """\
+template <typename A>
+A& serialize(A& a, @struct@& s)
+{
+    return a @members@;
+}
+"""

@@ -1,5 +1,23 @@
 from omniidl import idlast, idltype, idlutil, idlvisitor, output
 
+ttsMap = {
+    idltype.tk_void:       "void",
+    idltype.tk_short:      "short",
+    idltype.tk_long:       "long",
+    idltype.tk_ushort:     "unsigned short",
+    idltype.tk_ulong:      "unsigned long",
+    idltype.tk_float:      "float",
+    idltype.tk_double:     "double",
+    idltype.tk_boolean:    "boolean",
+    idltype.tk_char:       "char",
+    idltype.tk_octet:      "unsigned char",
+    idltype.tk_any:        "any",
+    idltype.tk_longlong:   "long long",
+    idltype.tk_ulonglong:  "unsigned long long",
+    idltype.tk_longdouble: "long double",
+    idltype.tk_wchar:      "wchar"
+}
+
 class InterfacesAggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
     def __init__(self, main):

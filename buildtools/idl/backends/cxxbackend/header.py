@@ -2,6 +2,7 @@ import os
 import string
 
 from omniidl import idlast, idltype, idlutil, idlvisitor, output
+from cxxbackend import tools
 
 class HeadersAggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
@@ -45,27 +46,6 @@ class HeadersAggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             m.memberType().accept(self)
 
 class Header (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-
-    ttsMap = {
-        idltype.tk_void:       "void",
-        idltype.tk_short:      "short",
-        idltype.tk_long:       "long",
-        idltype.tk_ushort:     "unsigned short",
-        idltype.tk_ulong:      "unsigned long",
-        idltype.tk_float:      "float",
-        idltype.tk_double:     "double",
-        idltype.tk_boolean:    "boolean",
-        idltype.tk_char:       "char",
-        idltype.tk_octet:      "unsigned char",
-        idltype.tk_any:        "any",
-        idltype.tk_TypeCode:   "CORBA::TypeCode",
-        idltype.tk_Principal:  "CORBA::Principal",
-        idltype.tk_longlong:   "long long",
-        idltype.tk_ulonglong:  "unsigned long long",
-        idltype.tk_longdouble: "long double",
-        idltype.tk_wchar:      "wchar"
-        }
-
     def __init__(self, st, includes, stdincludes):
         self.st = st
         self.includes = includes
@@ -288,7 +268,7 @@ virtual @type@ @ids@(const @type@);""", type=type, ids=ids)
             p.paramType().accept(self)
             type = self.__result_type
             if type != 'void':
-                if type in self.ttsMap.values():
+                if type in tools.ttsMap.values():
                     paraml.append(inout + ' ' + type + ' ' + p.identifier())
                 else:
                     paraml.append(inout + ' ' + type + '& ' + p.identifier())
@@ -315,7 +295,7 @@ virtual @rtype@ @id@(@params@)@raises@ = 0;""",
                     params=params, raises=raises, comments=comments)
 
     def visitBaseType(self, type):
-        self.__result_type = self.ttsMap[type.kind()]
+        self.__result_type = tools.ttsMap[type.kind()]
 
     def visitDeclaredType(self, type):
         self.__result_type = idlutil.ccolonName(type.decl().scopedName())
