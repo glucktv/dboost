@@ -203,7 +203,7 @@ enum @id@ {@enums@};""",
         node.attrType().accept(self)
         type = self.__result_type
 
-        ids  = string.join(node.identifiers(), ", ")
+        ids = string.join(node.identifiers(), ", ")
 
         if readonly:
             self.st.out("""\
@@ -266,7 +266,7 @@ virtual @rtype@ @id@(@params@)@raises@ = 0;""",
         self.__result_type = "std::string"
 
     def visitWStringType(self, type):
-        self.__result_type = "std:wstring"
+        self.__result_type = "std::wstring"
 
 def run(tree, args):
     ha = tools.Aggregator()

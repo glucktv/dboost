@@ -84,10 +84,66 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         for n in node.definitions():
             n.accept(self)
 
-        operationss = ','.join(map(lambda s: '{\n' + '"' + s + '"' +'}', self.operations))
+        operationsstr = ',\n'.join(map(lambda s: '{' + '"' + s + '"' + ', &' + self.class_name + '::call_' + s +'}', self.operations))
         self.st.out(self.templates[self.__class__.__name__]['module_bottom'], id=node.identifier(),
                     class_name=self.class_name, suffix=self.suffix, interface=self.interface,
-                    operations=operationss)
+                    operations=operationsstr)
+
+    def visitInterface(self, node):
+        if node.identifier() == self.interface:
+            for n in node.contents():
+                n.accept(self)
+
+    def visitOperation(self, node):
+        self.operations.append(node.identifier())
+        node.returnType().accept(self)
+        rtype = self.__result_type
+
+        paraml = []
+        i = 0
+        for p in node.parameters():
+            p.paramType().accept(self)
+            type = self.__result_type
+            paraml.append((type, 'param' + str(i), p.is_out()))
+            i += 1
+
+        params_def = '\n'.join(map(lambda (type, name, is_out): type + ' ' + name + ';', paraml))
+        params_serialize = 'dboost::iserializer is(m);\nis ' if len(paraml) > 0 else ''
+        params_serialize += ' '.join(map(lambda (type, name, is_out): '& ' + name, paraml))
+        if params_serialize != '':
+            params_serialize += ';'
+        params_out_serialize = 'dboost::oserializer os(result.get());\nos & r' if rtype != 'void' else ''
+        params_out_serialize += ' '.join(map(lambda (type, name, is_out): '& ' + name, filter(lambda (type, name, is_out): is_out, paraml)))
+        if params_out_serialize != '':
+            params_out_serialize += ';'
+        call = ''
+        if rtype != 'void':
+            call += rtype + ' r = ';
+        call = 't->' + node.identifier() + '('
+        call += ', '.join(map(lambda (type, name, is_out): name, paraml))
+        call += ')'
+
+        self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(), interface=self.interface,
+                    params_def=params_def, params_serialize=params_serialize, params_out_serialize=params_out_serialize, call=call)
+
+        self.st.out("""\
+}
+""")
+
+    def visitBaseType(self, type):
+        self.__result_type = tools.ttsMap[type.kind()]
+
+    def visitDeclaredType(self, type):
+        self.__result_type = idlutil.ccolonName(type.decl().scopedName())
+
+    def visitSequenceType(self, type):
+        self.__result_type = "std::vector<" + type.seqType().name() + ">"
+
+    def visitStringType(self, type):
+        self.__result_type = "std::string"
+
+    def visitWStringType(self, type):
+        self.__result_type = "std::wstring"
 
 def run(tree, args, templates, suffix):
     ia = tools.Aggregator()

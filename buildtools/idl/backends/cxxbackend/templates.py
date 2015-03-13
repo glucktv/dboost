@@ -102,8 +102,6 @@ DBusHandlerResult @class_name@::handle_message(DBusConnection* connection, DBusM
     typedef map<string, caller> caller_table;
     static const caller_table vtbl {
         @operations@
-    //        { "add_timer", &timer_adaptor::call_add_timer },
-    //        { "remove_timer", &timer_adaptor::call_remove_timer },
     };
 
     auto func = vtbl.find(name);
@@ -120,6 +118,20 @@ DBusHandlerResult @class_name@::handle_message(DBusConnection* connection, DBusM
 }
 
 }
+"""
+
+out['AdapterSource']['operation'] = """\
+dboost::dbus_ptr<DBusMessage> database_adaptor::call_@operation@(dboost_test::database* t, DBusMessage* m)
+{
+    clog << __FUNCTION__ << endl;
+    assert(t && m);
+
+    @params_def@
+    @params_serialize@
+    @call@
+    dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
+    @params_out_serialize@
+    return result;
 """
 
 out['ProxyHeader']['head'] = """\
