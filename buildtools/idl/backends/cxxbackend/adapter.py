@@ -61,8 +61,33 @@ namespace @id@
         self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(), interface=self.interface)
 
 class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-    def __init__(self, st):
+    def __init__(self, st, interface, suffix, templates):
         self.st = st
+        self.interface = interface
+        self.suffix = suffix
+        self.templates = templates
+        self.class_name = interface + '_' + suffix
+
+        self.operations = []
+
+    def visitAST(self, node):
+        self.st.out(self.templates[self.__class__.__name__]['head'], class_name=self.class_name)
+
+        for n in node.declarations():
+            if n.mainFile():
+                n.accept(self)
+
+    def visitModule(self, node):
+        self.st.out(self.templates[self.__class__.__name__]['module_top'], id=node.identifier(),
+                    class_name=self.class_name, suffix=self.suffix, interface=self.interface)
+
+        for n in node.definitions():
+            n.accept(self)
+
+        operationss = ','.join(map(lambda s: '{\n' + '"' + s + '"' +'}', self.operations))
+        self.st.out(self.templates[self.__class__.__name__]['module_bottom'], id=node.identifier(),
+                    class_name=self.class_name, suffix=self.suffix, interface=self.interface,
+                    operations=operationss)
 
 def run(tree, args, templates, suffix):
     ia = tools.Aggregator()
@@ -75,9 +100,10 @@ def run(tree, args, templates, suffix):
 
             cv = AdapterHeader(st, interface, suffix, templates)
             tree.accept(cv)
-    #
-    # with open(name + '_proxy.cpp', 'w') as source:
-    #     st = output.Stream(source, 2)
-    #
-    #     cv = AdapterSource(st)
-    #     tree.accept(cv)
+
+    for interface in interfaces:
+        with open(interface + '_' + suffix + '.cpp', 'w') as source:
+            st = output.Stream(source, 2)
+
+            cv = AdapterSource(st, interface, suffix, templates)
+            tree.accept(cv)
