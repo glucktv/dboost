@@ -24,17 +24,18 @@ public:
     ptr(U* val, bool owned = false)
         : m_refee(get_refee(val, owned)) {}
     template<typename U>
-    ptr(std::shared_ptr<U> rhs)
+    ptr(const std::shared_ptr<U> rhs)
         : m_refee(rhs) {}
-    T& operator*()
+    ptr& operator= (const ptr& rhs) = default;
+    T& operator*() const
     {
         return *m_refee.get();
     }
-    T* operator->()
+    T* operator->() const
     {
         return m_refee.get();
     }
-    T* get()
+    T* get() const
     {
         return m_refee.get();
     }

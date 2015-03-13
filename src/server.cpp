@@ -26,9 +26,9 @@ DBusObjectPathVTable server::s_vtbl = {
     nullptr
 };
 
-server::server(const std::string& name)
+server::server(dbus_ptr<DBusConnection> connection, const std::string& name)
     : m_name(name),
-      m_connection(create_connection())
+      m_connection(connection)
 {
     error err;
     if (dbus_bus_request_name(m_connection.get(), m_name.c_str(), 0, &err) == -1) {
@@ -62,13 +62,13 @@ server::message_func(DBusConnection* connection, DBusMessage* message,
     return s->message_func_impl(connection, message);
 }
 
-void server::set_dispatcher(dispatcher* w)
+void server::set_dispatcher(dispatcher* disp)
 {
     DBOOST_CHECK(dbus_connection_set_watch_functions(m_connection.get(),
                                                      &server::add_watch,
                                                      &server::remove_watch,
                                                      &server::watch_toggled,
-                                                     w,
+                                                     disp,
                                                      nullptr));
 }
 

@@ -18,20 +18,25 @@
 
 using namespace std;
 
+namespace dboost
+{
+
+const char* adaptor_traits<dboost_test::database>::interface_name = "org.dboost.database";
+
+}
+
 namespace dboost_test
 {
 
-const char* database_adaptor::INTERFACE_NAME = "org.dboost.database";
+const char* database_adaptor::INTERFACE_NAME = dboost::adaptor_traits<dboost_test::database>::interface_name;
 
 database_adaptor::database_adaptor(dboost::server& s)
     : m_server(s)
 {
-    m_server.register_adaptor(this, database_adaptor::INTERFACE_NAME);
 }
 
 database_adaptor::~database_adaptor()
 {
-    m_server.unregister_adaptor(this, database_adaptor::INTERFACE_NAME);
 }
 
 DBusHandlerResult
@@ -84,7 +89,6 @@ void
 database_adaptor::add_object(dboost_test::database* t, const std::string& name)
 {
     clog << __FUNCTION__ << endl;
-    m_server.register_object(name);
     m_objects[name] = t;
 }
 
@@ -94,7 +98,6 @@ database_adaptor::remove_object(const std::string& name)
     clog << __FUNCTION__ << endl;
     auto it = m_objects.find(name);
     if (it != m_objects.end()) {
-        m_server.unregister_object(name);
         m_objects.erase(it);
     }
 }

@@ -27,7 +27,7 @@ class dispatcher;
 class server
 {
 public:
-    server(const std::string& name);
+    server(dbus_ptr<DBusConnection> connection, const std::string& name);
     ~server();
 
     template <typename T>
@@ -41,7 +41,7 @@ public:
     dbus_ptr<DBusConnection> get_connection();
     std::string get_unique_name();
 
-    void set_dispatcher(dispatcher* w);
+    void set_dispatcher(dispatcher* disp);
 
 private:
     const std::string m_name;

@@ -45,7 +45,7 @@ void timer_observer_proxy::on_timeout()
 
     // call asynchronously
     dboost::error err;
-    dbus_connection_send_with_reply_and_block(m_connection.get(), msg.get(), 5000, &err);
+    dbus_connection_send(m_connection.get(), msg.get(), nullptr);
 }
 
 } // namespace dboost_test

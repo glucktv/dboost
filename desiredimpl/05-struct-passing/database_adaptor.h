@@ -51,6 +51,18 @@ private:
 
 };
 
+}
+
+namespace dboost
+{
+
+template <>
+struct adaptor_traits<dboost_test::database>
+{
+    typedef dboost_test::database_adaptor type;
+    static const char* interface_name;
+};
+
 } // namespace dboost
 
 #endif /* DATABASE_ADAPTOR_H_ */
