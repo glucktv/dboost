@@ -118,7 +118,7 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             params_out_serialize += ';'
         call = ''
         if rtype != 'void':
-            call += rtype + ' r = ';
+            call += rtype + ' r = '
         call += 't->' + node.identifier() + '('
         call += ', '.join(map(lambda (type, name, is_out): name, paraml))
         call += ')'

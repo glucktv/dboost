@@ -8,6 +8,7 @@ class Serializer (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.st = st
         self.templates = templates
         self.suffix = suffix
+        self.interface = ''
 
     def visitAST(self, node):
         self.interface = os.path.basename(node.file()).replace(".idl", "")

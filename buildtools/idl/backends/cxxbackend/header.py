@@ -14,7 +14,7 @@ class Header (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         ig = os.path.basename(node.file()).replace(".idl", "_HPP").upper()
         self.st.out("""#ifndef @ig@
 #define @ig@
-""", ig = ig)
+""", ig=ig)
         self.st.out(
             '\n'.join(map(lambda i: '#include <' + i + '>', self.stdincludes)));
         self.st.out(
@@ -23,7 +23,7 @@ class Header (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         for n in node.declarations():
             if n.mainFile():
                 n.accept(self)
-	self.st.out("#endif // @ig@", ig = ig)
+        self.st.out("#endif // @ig@", ig=ig)
 
     def visitModule(self, node):
         self.st.out("""\
@@ -57,7 +57,7 @@ class @id@ @inherits@
 {
 public:
   virtual ~@id@() {};""",
-                    id = node.identifier(), inherits=inherits)
+                    id=node.identifier(), inherits=inherits)
 
         self.st.inc_indent()
 
@@ -71,7 +71,7 @@ public:
 
     def visitForward(self, node):
         self.st.out("""\
-class @id@;""", id = node.identifier())
+class @id@;""", id=node.identifier())
 
 
     def visitConst(self, node):
@@ -109,7 +109,7 @@ const @type@ @id@ = @value@;""",
             node.aliasType().decl().accept(self)
 
         node.aliasType().accept(self)
-        type  = self.__result_type
+        atype = self.__result_type
         decll = []
         for d in node.declarators():
             d.accept(self)
@@ -118,14 +118,13 @@ const @type@ @id@ = @value@;""",
 
         self.st.out("""\
 typedef @type@ @decls@;""",
-               type=type, decls=decls)
+               type=atype, decls=decls)
 
 
     def visitStruct(self, node):
         self.st.out("""\
 struct @id@ 
-{""",
-               id = node.identifier())
+{""", id=node.identifier())
 
         for m in node.members():
             if m.constrType():
@@ -142,23 +141,21 @@ struct @id@
             decls = string.join(decll, ", ")
 
             self.st.out("""\
-  @type@ @decls@;""",
-
-                   type=type, decls=decls)
+  @type@ @decls@;""", type=type, decls=decls)
 
         self.st.out("""\
 };""")
 
     def visitStructForward(self, node):
         self.st.out("""\
-struct @id@;""", id = node.identifier())
+struct @id@;""", id=node.identifier())
 
 
     def visitException(self, node):
         self.st.out("""\
 class @id@
 {""",
-               id = node.identifier())
+               id=node.identifier())
 
         for m in node.members():
             if m.constrType():
@@ -167,7 +164,7 @@ class @id@
                 self.st.dec_indent()
 
             m.memberType().accept(self)
-            type = self.__result_type
+            mtype = self.__result_type
             decll = []
             for d in m.declarators():
                 d.accept(self)
@@ -177,7 +174,7 @@ class @id@
             self.st.out("""\
   @type@ @decls@;""",
 
-                        type=type, decls=decls)
+                        type=mtype, decls=decls)
 
         self.st.out("""\
 };
@@ -190,9 +187,7 @@ class @id@
         enums = string.join(enuml, ", ")
 
         self.st.out("""\
-enum @id@ {@enums@};""",
-
-               id=node.identifier(), enums=enums)
+enum @id@ {@enums@};""", id=node.identifier(), enums=enums)
 
     def visitAttribute(self, node):
         if node.readonly():
@@ -221,18 +216,21 @@ virtual @type@ @ids@(const @type@);""", type=type, ids=ids)
 
         paraml = []
         for p in node.parameters():
-            if   p.is_in() and p.is_out(): inout = ""
-            elif p.is_in():                inout = "const"
-            else:                          inout = ""
-            p.paramType().accept(self)
-            type = self.__result_type
-            if type != 'void':
-                if type in tools.ttsMap.values():
-                    paraml.append(inout + ' ' + type + ' ' + p.identifier())
-                else:
-                    paraml.append(inout + ' ' + type + '& ' + p.identifier())
+            if p.is_in() and p.is_out():
+                inout = ""
+            elif p.is_in():
+                inout = "const"
             else:
-                paraml.append(inout + ' ' + type + ' ' + p.identifier())
+                inout = ""
+            p.paramType().accept(self)
+            ptype = self.__result_type
+            if rtype != 'void':
+                if rtype in tools.ttsMap.values():
+                    paraml.append(inout + ' ' + ptype + ' ' + p.identifier())
+                else:
+                    paraml.append(inout + ' ' + ptype + '& ' + p.identifier())
+            else:
+                paraml.append(inout + ' ' + ptype + ' ' + p.identifier())
 
         params = string.join(paraml, ", ")
 
@@ -248,9 +246,7 @@ virtual @type@ @ids@(const @type@);""", type=type, ids=ids)
 
         self.st.out("""\
 @comments@\
-virtual @rtype@ @id@(@params@)@raises@ = 0;""",
-               
-               rtype=rtype, id=node.identifier(),
+virtual @rtype@ @id@(@params@)@raises@ = 0;""", rtype=rtype, id=node.identifier(),
                     params=params, raises=raises, comments=comments)
 
     def visitBaseType(self, type):
