@@ -11,6 +11,7 @@ class AdapterHeader (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.suffix = suffix
         self.templates = templates
         self.class_name = interface + '_' + suffix
+        self.module_name = ''
 
     def visitAST(self, node):
         ig = (self.interface + '_' + self.suffix + '_HPP').upper()
@@ -22,9 +23,10 @@ class AdapterHeader (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.st.out("#endif // @ig@", ig=ig)
 
     def visitModule(self, node):
+        self.module_name = node.identifier()
         self.st.out("""\
-namespace @id@
-{""", id = node.identifier())
+namespace @module_name@
+{""", module_name=self.module_name)
 
 #        self.st.inc_indent()
 
@@ -45,7 +47,8 @@ namespace @id@
         inherits = 'dboost::' + self.suffix
 
         self.st.out(self.templates[self.__class__.__name__]['interface'],
-                    id=node.identifier(), inherits=inherits, class_name=self.class_name, ancestor=self.interface)
+                    id=node.identifier(), inherits=inherits, class_name=self.class_name, ancestor=self.interface,
+                    module_name=self.module_name)
 
         self.st.inc_indent()
 
@@ -58,7 +61,9 @@ namespace @id@
 """)
 
     def visitOperation(self, node):
-        self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(), interface=self.interface)
+        self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(),
+                    interface=self.interface, module_name=self.module_name)
+
 
 class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     def __init__(self, st, interface, suffix, templates):
@@ -69,6 +74,7 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.class_name = interface + '_' + suffix
 
         self.operations = []
+        self.module_name = ''
 
     def visitAST(self, node):
         self.st.out(self.templates[self.__class__.__name__]['head'], class_name=self.class_name)
@@ -78,8 +84,9 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
                 n.accept(self)
 
     def visitModule(self, node):
-        self.st.out(self.templates[self.__class__.__name__]['module_top'], id=node.identifier(),
-                    class_name=self.class_name, suffix=self.suffix, interface=self.interface)
+        self.module_name = node.identifier()
+        self.st.out(self.templates[self.__class__.__name__]['module_top'],
+                    class_name=self.class_name, suffix=self.suffix, interface=self.interface, module_name=self.module_name)
 
         for n in node.definitions():
             n.accept(self)
@@ -103,17 +110,19 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         i = 0
         for p in node.parameters():
             p.paramType().accept(self)
-            type = self.__result_type
-            paraml.append((type, 'param' + str(i), p.is_out()))
+            ptype = self.__result_type
+            paraml.append((ptype, 'param' + str(i), p.is_out()))
             i += 1
 
-        params_def = '\n'.join(map(lambda (type, name, is_out): type + ' ' + name + ';', paraml))
+        params_def = '\n'.join(map(lambda (ptype, name, is_out): ptype + ' ' + name + ';', paraml))
         params_serialize = 'dboost::iserializer is(m);\nis ' if len(paraml) > 0 else ''
-        params_serialize += ' '.join(map(lambda (type, name, is_out): '& ' + name, paraml))
+        params_serialize += ' '.join(map(lambda (ptype, name, is_out): '& ' + name, paraml))
         if params_serialize != '':
             params_serialize += ';'
-        params_out_serialize = 'dboost::oserializer os(result.get());\nos & r' if rtype != 'void' else ''
-        params_out_serialize += ' '.join(map(lambda (type, name, is_out): '& ' + name, filter(lambda (type, name, is_out): is_out, paraml)))
+        params_out = filter(lambda (ptype, name, is_out): is_out, paraml)
+        params_out_serialize = 'dboost::oserializer os(result.get());\nos ' if rtype != 'void' or len(params_out) > 0 else ''
+        params_out_serialize += '& r ' if rtype != 'void' else ''
+        params_out_serialize += ' '.join(map(lambda (ptype, name, is_out): '& ' + name, params_out))
         if params_out_serialize != '':
             params_out_serialize += ';'
         call = ''
@@ -124,7 +133,8 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         call += ')'
 
         self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(), interface=self.interface,
-                    params_def=params_def, params_serialize=params_serialize, params_out_serialize=params_out_serialize, call=call)
+                    params_def=params_def, params_serialize=params_serialize, params_out_serialize=params_out_serialize,
+                    call=call, module_name=self.module_name)
 
         self.st.out("""\
 }

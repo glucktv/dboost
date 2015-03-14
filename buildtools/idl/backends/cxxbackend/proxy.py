@@ -107,8 +107,83 @@ namespace @id@
     def visitWStringType(self, type):
         self.__result_type = "std:wstring"
 
+
 class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-    pass
+    def __init__(self, st, interface, suffix, templates):
+        self.st = st
+        self.interface = interface
+        self.suffix = suffix
+        self.templates = templates
+        self.class_name = interface + '_' + suffix
+
+        self.operations = []
+        self.module_name = ''
+
+    def visitAST(self, node):
+        self.st.out(self.templates[self.__class__.__name__]['head'], class_name=self.class_name)
+
+        for n in node.declarations():
+            if n.mainFile():
+                n.accept(self)
+
+    def visitModule(self, node):
+        self.module_name = node.identifier()
+        self.st.out(self.templates[self.__class__.__name__]['module'],
+                    class_name=self.class_name, suffix=self.suffix, interface=self.interface, module_name=self.module_name)
+
+        for n in node.definitions():
+            n.accept(self)
+
+        self.st.out("""}""")
+
+    def visitInterface(self, node):
+        if node.identifier() == self.interface:
+            for n in node.contents():
+                n.accept(self)
+
+    def visitOperation(self, node):
+        self.operations.append(node.identifier())
+        node.returnType().accept(self)
+        rtype = self.__result_type
+
+        paraml = []
+        i = 0
+        for p in node.parameters():
+            p.paramType().accept(self)
+            ptype = self.__result_type
+            paraml.append((ptype, 'param' + str(i), p.is_out()))
+            i += 1
+
+        params = ', '.join(map(lambda (ptype, name, is_out): ('const ' if is_out else '')+ ptype + ' ' + name, paraml))
+        params_serialize = 'dboost::oserializer os(msg.get());\nos ' if len(paraml) > 0 else ''
+        params_serialize += ' '.join(map(lambda (ptype, name, is_out): '& ' + name, paraml))
+
+        params_out = filter(lambda (type, name, is_out): is_out, paraml)
+        params_out_serialize = 'dboost::iserializer is(reply.get());\nis ' if rtype != 'void' or len(params_out) > 0 else ''
+        if rtype != 'void':
+            params_out_serialize += ' & r'
+        if len(params_out) > 0:
+            params_out_serialize += ' '.join(map(lambda (type, name, is_out): '& ' + name, params_out))
+        result = '' if rtype == 'void' else 'r'
+
+        self.st.out(self.templates[self.__class__.__name__]['operation'], class_name=self.class_name, rtype=rtype, operation=node.identifier(),
+                    params=params, params_serialize=params_serialize, params_out_serialize=params_out_serialize,
+                    result=result)
+
+    def visitBaseType(self, type):
+        self.__result_type = tools.ttsMap[type.kind()]
+
+    def visitDeclaredType(self, type):
+        self.__result_type = idlutil.ccolonName(type.decl().scopedName())
+
+    def visitSequenceType(self, type):
+        self.__result_type = "std::vector<" + type.seqType().name() + ">"
+
+    def visitStringType(self, type):
+        self.__result_type = "std::string"
+
+    def visitWStringType(self, type):
+        self.__result_type = "std::wstring"
 
 def run(tree, args, templates, suffix):
     ia = tools.Aggregator()
@@ -120,4 +195,11 @@ def run(tree, args, templates, suffix):
             st = output.Stream(header, 2)
 
             cv = ProxyHeader(st, interface, suffix, templates)
+            tree.accept(cv)
+
+    for interface in interfaces:
+        with open(interface + '_' + suffix + '.cpp', 'w') as source:
+            st = output.Stream(source, 2)
+
+            cv = ProxySource(st, interface, suffix, templates)
             tree.accept(cv)

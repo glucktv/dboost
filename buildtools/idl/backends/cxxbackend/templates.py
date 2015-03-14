@@ -20,17 +20,17 @@ public:
 
   virtual DBusHandlerResult handle_message(DBusConnection* connection, DBusMessage* message) override;
 
-  void add_object(dboost_test::@ancestor@* t, const std::string& name);
+  void add_object(@module_name@::@ancestor@* t, const std::string& name);
   void remove_object(const std::string& name);
 
 private:
   dboost::server& m_server;
-  std::map<std::string, dboost_test::database*> m_objects;
+  std::map<std::string, @module_name@::database*> m_objects;
 
   static const char* INTERFACE_NAME;
 """
 
-out['AdapterHeader']['operation'] = """dboost::dbus_ptr<DBusMessage> call_@operation@(dboost_test::@interface@* t, DBusMessage* m);"""
+out['AdapterHeader']['operation'] = """dboost::dbus_ptr<DBusMessage> call_@operation@(@module_name@::@interface@* t, DBusMessage* m);"""
 
 out['AdapterSource']['head'] = """\
 #include <map>
@@ -42,7 +42,7 @@ out['AdapterSource']['head'] = """\
 """
 
 out['AdapterSource']['module_top'] = """\
-namespace @id@
+namespace @module_name@
 {
 const char* timer_adaptor::INTERFACE_NAME = "org.dboost.@interface@";
 
@@ -57,7 +57,7 @@ const char* timer_adaptor::INTERFACE_NAME = "org.dboost.@interface@";
     m_server.unregister_@suffix@(this, @class_name@::INTERFACE_NAME);
 }
 
-void @class_name@::add_object(dboost_test::@interface@* t, const std::string& name)
+void @class_name@::add_object(@module_name@::@interface@* t, const std::string& name)
 {
     clog << __FUNCTION__ << endl;
     m_server.register_object(name);
@@ -121,7 +121,7 @@ DBusHandlerResult @class_name@::handle_message(DBusConnection* connection, DBusM
 """
 
 out['AdapterSource']['operation'] = """\
-dboost::dbus_ptr<DBusMessage> database_adaptor::call_@operation@(dboost_test::database* t, DBusMessage* m)
+dboost::dbus_ptr<DBusMessage> database_adaptor::call_@operation@(@module_name@::database* t, DBusMessage* m)
 {
     clog << __FUNCTION__ << endl;
     assert(t && m);
@@ -169,4 +169,52 @@ A& serialize(A& a, @struct@& s)
 {
     return a @members@;
 }
+"""
+
+out['ProxySource']['head'] = """\
+#include <iostream>
+#include <dbus/dbus.h>
+#include <exception.h>
+#include <serializer.h>
+#include <@class_name@>
+"""
+
+out['ProxySource']['module'] = """\
+namespace @module_name@
+{
+
+const char* @class_name@::s_ifc_name = "org.dboost.@interface@";
+const int TIMEOUT_MS = 5000;
+
+@class_name@::@class_name@(dboost::dbus_ptr<DBusConnection> conn,
+                        const std::string& bus_name, const std::string& obj_name)
+    : m_connection(conn),
+      m_bus_name(bus_name),
+      m_obj_name(obj_name)
+{
+}
+"""
+
+out['ProxySource']['operation'] = """\
+@rtype@ @class_name@::@operation@(@params@)
+{
+    // create caller (name, arguments)
+    dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "@operation@")));
+    @params_serialize@;
+
+    // call synchronously
+    dboost::error err;
+    dboost::dbus_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_connection.get(), msg.get(), TIMEOUT_MS, &err));
+
+    // check if there was an error
+    DBOOST_CHECK_WITH_ERR(reply, err);
+    if (dbus_message_get_type(reply.get()) == DBUS_MESSAGE_TYPE_ERROR) {
+        throw dboost::exception(dbus_message_get_error_name(reply.get()));
+    }
+
+    // unpack output parameters
+    @params_out_serialize@;
+    return @result@;
+}
+
 """
