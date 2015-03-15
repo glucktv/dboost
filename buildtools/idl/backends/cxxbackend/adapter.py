@@ -5,17 +5,22 @@ from omniidl import idlast, idltype, idlutil, idlvisitor, output
 from cxxbackend import tools
 
 class AdapterHeader (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-    def __init__(self, st, interface, suffix, templates):
+    def __init__(self, st, interface, suffix, templates, need_utils=False):
         self.st = st
         self.interface = interface
         self.suffix = suffix
         self.templates = templates
         self.class_name = interface + '_' + suffix
         self.module_name = ''
+        self.need_utils = need_utils
 
     def visitAST(self, node):
         ig = (self.interface + '_' + self.suffix + '_HPP').upper()
-        self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, suffix=self.suffix, interface=self.interface)
+        if self.need_utils:
+            util = '#include "' + self.interface + '_util.hpp' + '"'
+        else:
+            util = ''
+        self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, suffix=self.suffix, interface=self.interface, util=util)
 
         for n in node.declarations():
             if n.mainFile():
@@ -134,7 +139,7 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
         self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(), interface=self.interface,
                     params_def=params_def, params_serialize=params_serialize, params_out_serialize=params_out_serialize,
-                    call=call, module_name=self.module_name)
+                    call=call, module_name=self.module_name, class_name=self.class_name)
 
         self.st.out("""\
 }
@@ -156,15 +161,15 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.__result_type = "std::wstring"
 
 def run(tree, args, templates, suffix):
-    ia = tools.Aggregator()
-    tree.accept(ia)
-    interfaces = ia.getInterfaces()
+    ag = tools.Aggregator()
+    tree.accept(ag)
+    interfaces = ag.getInterfaces()
 
     for interface in interfaces:
         with open(interface + '_' + suffix + '.hpp', 'w') as header:
             st = output.Stream(header, 2)
 
-            cv = AdapterHeader(st, interface, suffix, templates)
+            cv = AdapterHeader(st, interface, suffix, templates, len(ag.getStructs()) != 0)
             tree.accept(cv)
 
     for interface in interfaces:

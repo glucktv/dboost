@@ -17,10 +17,10 @@ class ProxyHeader (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     def visitAST(self, node):
         ig = (self.interface + '_' + self.suffix + '_HPP').upper()
         if self.need_utils:
-            utils = '#include "' + self.interface + '_util.hpp' + '"'
+            util = '#include "' + self.interface + '_util.hpp' + '"'
         else:
-            utils = ''
-        self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, interface=self.interface, utils=utils)
+            util = ''
+        self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, interface=self.interface, util=util)
 
         for n in node.declarations():
             if n.mainFile():

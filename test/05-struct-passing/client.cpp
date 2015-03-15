@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "database_proxy.h"
+#include "database_proxy.hpp"
 #include <iostream>
 
 using namespace dboost;

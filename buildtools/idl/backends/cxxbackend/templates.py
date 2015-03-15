@@ -9,6 +9,7 @@ out['AdapterHeader']['head'] = """#ifndef @ig@
 #include <dbus_ptr.h>
 #include <@suffix@.h>
 #include "@interface@.hpp"
+@util@
 """
 
 out['AdapterHeader']['interface'] = """\
@@ -34,17 +35,20 @@ out['AdapterHeader']['operation'] = """dboost::dbus_ptr<DBusMessage> call_@opera
 
 out['AdapterSource']['head'] = """\
 #include <map>
+#include <iostream>
+#include <cassert>
+#include <cstring>
 #include <dbus/dbus.h>
 #include <serializer.h>
-#include "@class_name@.h"
 #include "server.h"
 #include "exception.h"
+#include "@class_name@.hpp"
 """
 
 out['AdapterSource']['module_top'] = """\
 namespace @module_name@
 {
-const char* timer_adaptor::INTERFACE_NAME = "org.dboost.@interface@";
+const char* @class_name@::INTERFACE_NAME = "org.dboost.@interface@";
 
 @class_name@::@class_name@(dboost::server& s)
     : m_server(s)
@@ -59,14 +63,14 @@ const char* timer_adaptor::INTERFACE_NAME = "org.dboost.@interface@";
 
 void @class_name@::add_object(@module_name@::@interface@* t, const std::string& name)
 {
-    clog << __FUNCTION__ << endl;
+    std::clog << __FUNCTION__ << std::endl;
     m_server.register_object(name);
     m_objects[name] = t;
 }
 
 void @class_name@::remove_object(const std::string& name)
 {
-    clog << __FUNCTION__ << endl;
+    std::clog << __FUNCTION__ << std::endl;
     auto it = m_objects.find(name);
     if (it != m_objects.end()) {
         m_server.unregister_object(name);
@@ -78,41 +82,41 @@ void @class_name@::remove_object(const std::string& name)
 out['AdapterSource']['module_bottom'] = """\
 DBusHandlerResult @class_name@::handle_message(DBusConnection* connection, DBusMessage* message)
 {
-    clog << __FUNCTION__ << endl;
+    std::clog << __FUNCTION__ << std::endl;
     assert(dbus_message_has_interface(message, INTERFACE_NAME));
     auto dst = dbus_message_get_path(message);
     if (dst == nullptr || strlen(dst) == 0) {
-        cerr << "Unknown message destination" << endl;
+        std::cerr << "Unknown message destination" << std::endl;
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
     auto obj = m_objects.find(dst);
     if (obj == m_objects.end()) {
-        cerr << "Destination object " << dst << " not found" << endl;
+        std::cerr << "Destination object " << dst << " not found" << std::endl;
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
     auto name = dbus_message_get_member(message);
     if (name == nullptr || strlen(name) == 0) {
-        cerr << "Unknown method name " << endl;
+        std::cerr << "Unknown method name " << std::endl;
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
     typedef dboost::dbus_ptr<DBusMessage> (@class_name@::*caller)(@interface@*, DBusMessage*);
-    typedef map<string, caller> caller_table;
+    typedef std::map<std::string, caller> caller_table;
     static const caller_table vtbl {
         @operations@
     };
 
     auto func = vtbl.find(name);
     if (func == vtbl.end()) {
-        cerr << "Wrong method name " << name << endl;
+        std::cerr << "Wrong method name " << name << std::endl;
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
     auto result = (this->*func->second)(obj->second, message);
 
-    clog << "Reply result" << endl;
+    std::clog << "Reply result" << std::endl;
     dbus_connection_send(connection, result.get(), 0);
     return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -121,14 +125,14 @@ DBusHandlerResult @class_name@::handle_message(DBusConnection* connection, DBusM
 """
 
 out['AdapterSource']['operation'] = """\
-dboost::dbus_ptr<DBusMessage> database_adaptor::call_@operation@(@module_name@::database* t, DBusMessage* m)
+dboost::dbus_ptr<DBusMessage> @class_name@::call_@operation@(@module_name@::database* t, DBusMessage* m)
 {
-    clog << __FUNCTION__ << endl;
+    std::clog << __FUNCTION__ << std::endl;
     assert(t && m);
 
     @params_def@
     @params_serialize@
-    @call@
+    @call@;
     dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
     @params_out_serialize@
     return result;
@@ -140,7 +144,7 @@ out['ProxyHeader']['head'] = """\
 #include <string>
 #include <dbus_ptr.h>
 #include "@interface@.hpp"
-@utils@
+@util@
 """
 
 out['ProxyHeader']['interface'] = """\
