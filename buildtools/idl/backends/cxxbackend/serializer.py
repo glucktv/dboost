@@ -12,11 +12,12 @@ class Serializer (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
     def visitAST(self, node):
         self.interface = os.path.basename(node.file()).replace(".idl", "")
-        ig = (self.interface + '_' + self.suffix + '.hpp').upper()
+        ig = (self.interface + '_' + self.suffix + '_hpp').upper()
         self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, interface=self.interface)
         for n in node.declarations():
             if n.mainFile():
                 n.accept(self)
+        self.st.out("#endif // @ig@", ig=ig)
 
     def visitModule(self, node):
         self.st.out("""\

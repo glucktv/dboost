@@ -5,17 +5,22 @@ from omniidl import idlast, idltype, idlutil, idlvisitor, output
 from cxxbackend import tools
 
 class ProxyHeader (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-    def __init__(self, st, interface, suffix, templates):
+    def __init__(self, st, interface, suffix, templates, need_utils=False):
         self.st = st
         self.interface = interface
         self.suffix = suffix
         self.templates = templates
         self.class_name = interface + '_' + suffix
         self.namespace = ''
+        self.need_utils = need_utils
 
     def visitAST(self, node):
         ig = (self.interface + '_' + self.suffix + '_HPP').upper()
-        self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, interface=self.interface)
+        if self.need_utils:
+            utils = '#include "' + self.interface + '_util.hpp' + '"'
+        else:
+            utils = ''
+        self.st.out(self.templates[self.__class__.__name__]['head'], ig=ig, interface=self.interface, utils=utils)
 
         for n in node.declarations():
             if n.mainFile():
@@ -167,9 +172,19 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             params_out_serialize += ' '.join(map(lambda (type, name, is_out): '& ' + name, params_out))
         result = '' if rtype == 'void' else 'r'
 
+        if len(node.raises()) > 0:
+            raisel = []
+            for r in node.raises():
+                ename  = idlutil.ccolonName(r.scopedName())
+                raisel.append(ename)
+
+            raises = " throw (" + string.join(raisel, ", ") + ")"
+        else:
+            raises = ""
+
         self.st.out(self.templates[self.__class__.__name__]['operation'], class_name=self.class_name, rtype=rtype, operation=node.identifier(),
                     params=params, params_serialize=params_serialize, params_out_serialize=params_out_serialize,
-                    result=result)
+                    result=result, raises=raises)
 
     def visitBaseType(self, type):
         self.__result_type = tools.ttsMap[type.kind()]
@@ -187,15 +202,15 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.__result_type = "std::wstring"
 
 def run(tree, args, templates, suffix):
-    ia = tools.Aggregator()
-    tree.accept(ia)
-    interfaces = ia.getInterfaces()
+    ag = tools.Aggregator()
+    tree.accept(ag)
+    interfaces = ag.getInterfaces()
 
     for interface in interfaces:
         with open(interface + '_' + suffix + '.hpp', 'w') as header:
             st = output.Stream(header, 2)
 
-            cv = ProxyHeader(st, interface, suffix, templates)
+            cv = ProxyHeader(st, interface, suffix, templates, len(ag.getStructs()) != 0)
             tree.accept(cv)
 
     for interface in interfaces:

@@ -140,6 +140,7 @@ out['ProxyHeader']['head'] = """\
 #include <string>
 #include <dbus_ptr.h>
 #include "@interface@.hpp"
+@utils@
 """
 
 out['ProxyHeader']['interface'] = """\
@@ -160,7 +161,7 @@ out['Serializer']['head'] = """\
 #ifndef @ig@
 #define @ig@
 
-#include <@interface@.hpp>
+#include "@interface@.hpp"
 """
 
 out['Serializer']['struct'] = """\
@@ -196,7 +197,7 @@ const int TIMEOUT_MS = 5000;
 """
 
 out['ProxySource']['operation'] = """\
-@rtype@ @class_name@::@operation@(@params@)
+@rtype@ @class_name@::@operation@(@params@)@raises@
 {
     // create caller (name, arguments)
     dboost::dbus_ptr<DBusMessage> msg(DBOOST_CHECK(dbus_message_new_method_call(m_bus_name.c_str(), m_obj_name.c_str(), s_ifc_name, "@operation@")));
