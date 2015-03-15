@@ -8,7 +8,7 @@ out['AdapterHeader']['head'] = """#ifndef @ig@
 #include <dbus/dbus.h>
 #include <dbus_ptr.h>
 #include <@suffix@.h>
-#include <@interface@.hpp>
+#include "@interface@.hpp"
 """
 
 out['AdapterHeader']['interface'] = """\
@@ -139,7 +139,7 @@ out['ProxyHeader']['head'] = """\
 #define @ig@
 #include <string>
 #include <dbus_ptr.h>
-#include <@interface@.hpp>
+#include "@interface@.hpp"
 """
 
 out['ProxyHeader']['interface'] = """\
@@ -151,7 +151,7 @@ private:
   const std::string m_obj_name;
   static const char* s_ifc_name;
 public:
-  timer_proxy(dboost::dbus_ptr<DBusConnection> conn, const std::string& bus_name, const std::string& obj_name);
+  @class_name@(dboost::dbus_ptr<DBusConnection> conn, const std::string& bus_name, const std::string& obj_name);
 """
 
 out['ProxyHeader']['operation'] = """virtual @rtype@ @id@(@params@)@raises@ override;"""
@@ -176,7 +176,7 @@ out['ProxySource']['head'] = """\
 #include <dbus/dbus.h>
 #include <exception.h>
 #include <serializer.h>
-#include <@class_name@>
+#include "@class_name@.hpp"
 """
 
 out['ProxySource']['module'] = """\

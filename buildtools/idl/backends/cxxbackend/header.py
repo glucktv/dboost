@@ -224,8 +224,8 @@ virtual @type@ @ids@(const @type@);""", type=type, ids=ids)
                 inout = ""
             p.paramType().accept(self)
             ptype = self.__result_type
-            if rtype != 'void':
-                if rtype in tools.ttsMap.values():
+            if ptype != 'void':
+                if ptype in tools.ttsMap.values():
                     paraml.append(inout + ' ' + ptype + ' ' + p.identifier())
                 else:
                     paraml.append(inout + ' ' + ptype + '& ' + p.identifier())

@@ -154,12 +154,13 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             paraml.append((ptype, 'param' + str(i), p.is_out()))
             i += 1
 
-        params = ', '.join(map(lambda (ptype, name, is_out): ('const ' if is_out else '')+ ptype + ' ' + name, paraml))
+        params = ', '.join(map(lambda (ptype, name, is_out): ('const ' if not is_out else '') + ptype +
+                                                             ('& ' if ptype not in tools.ttsMap.values() else '') + ' ' + name, paraml))
         params_serialize = 'dboost::oserializer os(msg.get());\nos ' if len(paraml) > 0 else ''
         params_serialize += ' '.join(map(lambda (ptype, name, is_out): '& ' + name, paraml))
 
         params_out = filter(lambda (type, name, is_out): is_out, paraml)
-        params_out_serialize = 'dboost::iserializer is(reply.get());\nis ' if rtype != 'void' or len(params_out) > 0 else ''
+        params_out_serialize = 'dboost::iserializer is(reply.get());\n' + rtype + ' r;\nis ' if rtype != 'void' or len(params_out) > 0 else ''
         if rtype != 'void':
             params_out_serialize += ' & r'
         if len(params_out) > 0:
