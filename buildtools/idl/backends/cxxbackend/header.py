@@ -273,6 +273,5 @@ def run(tree, args):
     name, ext = os.path.splitext(os.path.basename(tree.file()))
     with open(name + '.hpp', 'w') as header:
         st = output.Stream(header, 2)
-
         cv = Header(st, includes, stdincludes)
         tree.accept(cv)

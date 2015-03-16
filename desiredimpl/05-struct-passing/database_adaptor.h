@@ -8,7 +8,7 @@
 #ifndef DATABASE_ADAPTOR_H_
 #define DATABASE_ADAPTOR_H_
 
-#include "timer_adaptor.h"
+#include "adaptor.h"
 #include "server.h"
 #include "exception.h"
 #include <dbus/dbus.h>

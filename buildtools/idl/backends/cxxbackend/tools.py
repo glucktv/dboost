@@ -54,6 +54,11 @@ class Aggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             n.accept(self)
         self.structs.add(node.identifier())
 
+    def visitOperation(self, node):
+        node.returnType().accept(self)
+        for p in node.parameters():
+            p.paramType().accept(self)
+
     def visitTypedef(self, node):
         node.aliasType().accept(self)
 
