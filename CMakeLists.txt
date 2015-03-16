@@ -27,7 +27,7 @@ function(build_example NAME)
     foreach(IDL ${IDLS})
       get_filename_component(FILENAME ${IDL} NAME_WE)
       MESSAGE(STATUS "CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
-      add_custom_command(OUTPUT ${DSTPATH}/${FILENAME}.hpp 
+      add_custom_command(OUTPUT ${DSTPATH}/${FILENAME}.hpp ${DSTPATH}/${FILENAME}_proxy.hpp ${DSTPATH}/${FILENAME}_adaptor.hpp ${DSTPATH}/${FILENAME}_proxy.cpp ${DSTPATH}/${FILENAME}_adaptor.cpp
                          COMMAND omniidl 
                          ARGS ${BE_PATH} -bcxxbackend -C${DSTPATH} -K ${IDL}
                          COMMENT "Creating ${FILENAME}.hpp")
@@ -38,8 +38,8 @@ function(build_example NAME)
     # desired impl
     set(DES_PATH ./${NAME})
     MESSAGE(STATUS "DES_PATH: " ${DES_PATH})
-    aux_source_directory(${DES_PATH} DES_SRC)
-    add_library(dboost_test_${NAME} STATIC ${DES_SRC})
+    # aux_source_directory(${DES_PATH} DES_SRC)
+    add_library(dboost_test_${NAME} STATIC ${DSTPATH}/${FILENAME}.hpp ${DSTPATH}/${FILENAME}_proxy.hpp ${DSTPATH}/${FILENAME}_adaptor.hpp ${DSTPATH}/${FILENAME}_proxy.cpp ${DSTPATH}/${FILENAME}_adaptor.cpp)
     add_dependencies(dboost_test_${NAME} gen-ifcs-${NAME})
     target_link_libraries(dboost_test_${NAME} dboost)
     #include_directories(${DES_PATH})
@@ -54,7 +54,7 @@ function(build_example NAME)
     # test lib / client
     set(EXC_SRCS ${EX_PATH}/client.cpp)
     add_executable(${NAME}-client ${EXC_SRCS})
-    target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1 boost_system)
+    target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1 boost_system dboost_test_${NAME})
     add_dependencies(${NAME}-client dboost dboost_test_${NAME})
     set_property(TARGET dboost_test_${NAME} ${NAME}-server ${NAME}-client 
 	    APPEND PROPERTY INCLUDE_DIRECTORIES ${DSTPATH} ${PROJECT_SOURCE_DIR}/${DES_PATH})
