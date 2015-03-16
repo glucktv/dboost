@@ -1,4 +1,5 @@
 test/*/*.hpp
+buildtools/idl/backends/cxxbackend/*.pyc
 buildtools/idl/backends/*.pyc
 .cproject
 .project
