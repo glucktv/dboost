@@ -26,7 +26,7 @@ public:
 
 private:
   dboost::server& m_server;
-  std::map<std::string, @module_name@::database*> m_objects;
+  std::map<std::string, @module_name@::@interface@*> m_objects;
 
   static const char* INTERFACE_NAME;
 """
@@ -125,7 +125,7 @@ DBusHandlerResult @class_name@::handle_message(DBusConnection* connection, DBusM
 """
 
 out['AdapterSource']['operation'] = """\
-dboost::dbus_ptr<DBusMessage> @class_name@::call_@operation@(@module_name@::database* t, DBusMessage* m)
+dboost::dbus_ptr<DBusMessage> @class_name@::call_@operation@(@module_name@::@interface@* t, DBusMessage* m)
 {
     std::clog << __FUNCTION__ << std::endl;
     assert(t && m);

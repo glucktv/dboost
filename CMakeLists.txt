@@ -36,7 +36,7 @@ function(build_example NAME)
     add_custom_target(gen-ifcs-${NAME} ALL DEPENDS ${IFCS})
     
     # desired impl
-    set(DES_PATH desiredimpl/${NAME})
+    set(DES_PATH ./${NAME})
     MESSAGE(STATUS "DES_PATH: " ${DES_PATH})
     aux_source_directory(${DES_PATH} DES_SRC)
     add_library(dboost_test_${NAME} STATIC ${DES_SRC})

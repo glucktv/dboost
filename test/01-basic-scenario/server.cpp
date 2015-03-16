@@ -1,6 +1,6 @@
 #include "server.h"
 #include "timer_impl.h"
-#include "timer_adaptor.h"
+#include "timer_adaptor.hpp"
 
 int main()
 {

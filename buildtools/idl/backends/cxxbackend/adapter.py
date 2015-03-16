@@ -53,7 +53,7 @@ namespace @module_name@
 
         self.st.out(self.templates[self.__class__.__name__]['interface'],
                     id=node.identifier(), inherits=inherits, class_name=self.class_name, ancestor=self.interface,
-                    module_name=self.module_name)
+                    module_name=self.module_name, interface=self.interface)
 
         self.st.inc_indent()
 

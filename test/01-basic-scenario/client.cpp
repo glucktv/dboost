@@ -4,10 +4,10 @@
  *  Created on: 26.02.2015
  *      Author: stas
  */
-#include "utils.h"
-#include "timer_proxy.h"
 #include <iostream>
 #include <unistd.h>
+#include "utils.h"
+#include "timer_proxy.hpp"
 
 using namespace dboost;
 using namespace std;
