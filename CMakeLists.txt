@@ -29,7 +29,7 @@ function(build_example NAME)
       MESSAGE(STATUS "CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
       add_custom_command(OUTPUT ${DSTPATH}/${FILENAME}.hpp 
                          COMMAND omniidl 
-                         ARGS ${BE_PATH} -bcppbackend -C${DSTPATH} -K ${IDL}
+                         ARGS ${BE_PATH} -bcxxbackend -C${DSTPATH} -K ${IDL}
                          COMMENT "Creating ${FILENAME}.hpp")
       list(APPEND IFCS ${DSTPATH}/${FILENAME}.hpp)
     endforeach()
