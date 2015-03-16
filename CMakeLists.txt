@@ -62,5 +62,5 @@ function(build_example NAME)
 endfunction(build_example)
 
 build_example(01-basic-scenario)
-#build_example(05-struct-passing)
+build_example(05-struct-passing)
 #build_example(02-observer)
