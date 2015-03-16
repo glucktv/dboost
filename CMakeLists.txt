@@ -48,13 +48,13 @@ function(build_example NAME)
     file(GLOB EXS_IMPL_SRCS "${EX_PATH}/*_impl.cpp")
     set(EXS_SRCS ${EXS_IMPL_SRCS} ${EX_PATH}/server.cpp)
     add_executable(${NAME}-server ${EXS_SRCS})
-    target_link_libraries(${NAME}-server dboost dboost_test_${NAME} dbus-1)
+    target_link_libraries(${NAME}-server dboost dboost_test_${NAME} dbus-1 boost_system)
     add_dependencies(${NAME}-server dboost dboost_test_${NAME})
     
     # test lib / client
     set(EXC_SRCS ${EX_PATH}/client.cpp)
     add_executable(${NAME}-client ${EXC_SRCS})
-    target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1)
+    target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1 boost_system)
     add_dependencies(${NAME}-client dboost dboost_test_${NAME})
     set_property(TARGET dboost_test_${NAME} ${NAME}-server ${NAME}-client 
 	    APPEND PROPERTY INCLUDE_DIRECTORIES ${DSTPATH} ${PROJECT_SOURCE_DIR}/${DES_PATH})

@@ -5,15 +5,17 @@
  *      Author: stas
  */
 
-#ifndef DBOOST_WATCH_H
-#define DBOOST_WATCH_H
+#ifndef DBOOST_DISPATCHER_H
+#define DBOOST_DISPATCHER_H
+
+#include <dbus/dbus.h>
 
 namespace dboost {
 
-class watch
+class dispatcher
 {
 public:
-	virtual ~watch() {}
+	virtual ~dispatcher() {}
 	virtual dbus_bool_t add_watch(DBusWatch*) = 0;
 	virtual void remove_watch(DBusWatch*) = 0;
 	virtual void watch_toggled(DBusWatch*) = 0;
@@ -21,4 +23,4 @@ public:
 
 } /* namespace dboost */
 
-#endif /* DBOOST_WATCH_H */
+#endif /* DBOOST_DISPATCHER_H */

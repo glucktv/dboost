@@ -215,7 +215,7 @@ struct serialization_strategy<std::vector<T>, false>
         type_collector c;
         c & *static_cast<T*>(0);
         auto signature = c.str();
-        std::cout << "Signature is " << signature << std::endl;
+        //std::clog << "Signature is " << signature << std::endl;
         subserializer<oserializer> ss(os, signature.c_str());
         for (auto item: val) {
             ss & item;
