@@ -1,8 +1,8 @@
+#include <utils.h>
+#include <boost_dispatcher.h>
 #include "server.h"
 #include "database_impl.h"
-#include "database_adaptor.h"
-#include <boost_dispatcher.h>
-#include <utils.h>
+#include "database_adaptor.hpp"
 
 
 int main()
