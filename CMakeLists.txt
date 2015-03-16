@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.7.8)
 
 set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
@@ -29,7 +29,7 @@ function(build_example NAME)
       MESSAGE(STATUS "CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
       add_custom_command(OUTPUT ${DSTPATH}/${FILENAME}.hpp 
                          COMMAND omniidl 
-                         ARGS ${BE_PATH} -bcppbackend -C${DSTPATH} -K ${IDL}
+                         ARGS ${BE_PATH} -bcxxbackend -C${DSTPATH} -K ${IDL}
                          COMMENT "Creating ${FILENAME}.hpp")
       list(APPEND IFCS ${DSTPATH}/${FILENAME}.hpp)
     endforeach()
