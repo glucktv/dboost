@@ -14,7 +14,6 @@ void print_person(const dboost_test::person& op)
 
 int main()
 {
-  cout << "PTPTPTP";
     dboost_test::database_proxy p(create_connection(), "org.dboost.structpassing", "/org/dboost/database/0");
 
     dboost_test::person pers;

@@ -26,23 +26,21 @@ function(build_example NAME)
     set(IFCS "")
     foreach(IDL ${IDLS})
       get_filename_component(FILENAME ${IDL} NAME_WE)
-      MESSAGE(STATUS "CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
       add_custom_command(OUTPUT ${DSTPATH}/${FILENAME}.hpp ${DSTPATH}/${FILENAME}_proxy.hpp ${DSTPATH}/${FILENAME}_adaptor.hpp ${DSTPATH}/${FILENAME}_proxy.cpp ${DSTPATH}/${FILENAME}_adaptor.cpp
                          COMMAND omniidl 
                          ARGS ${BE_PATH} -bcxxbackend -C${DSTPATH} -K ${IDL}
-                         COMMENT "Creating ${FILENAME}.hpp")
+                         COMMENT "Processing interface '${FILENAME}'")
       list(APPEND IFCS ${DSTPATH}/${FILENAME}.hpp)
     endforeach()
     add_custom_target(gen-ifcs-${NAME} ALL DEPENDS ${IFCS})
     
-    # desired impl
+    # automatically generated code 
     set(DES_PATH ./${NAME})
-    MESSAGE(STATUS "DES_PATH: " ${DES_PATH})
-    # aux_source_directory(${DES_PATH} DES_SRC)
-    add_library(dboost_test_${NAME} STATIC ${DSTPATH}/${FILENAME}.hpp ${DSTPATH}/${FILENAME}_proxy.hpp ${DSTPATH}/${FILENAME}_adaptor.hpp ${DSTPATH}/${FILENAME}_proxy.cpp ${DSTPATH}/${FILENAME}_adaptor.cpp)
+    add_library(dboost_test_${NAME} STATIC 
+	        ${DSTPATH}/${FILENAME}_proxy.cpp 
+		${DSTPATH}/${FILENAME}_adaptor.cpp)
     add_dependencies(dboost_test_${NAME} gen-ifcs-${NAME})
     target_link_libraries(dboost_test_${NAME} dboost)
-    #include_directories(${DES_PATH})
     
     # test lib / server
     file(GLOB EXS_IMPL_SRCS "${EX_PATH}/*_impl.cpp")
