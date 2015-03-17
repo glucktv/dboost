@@ -1,18 +1,12 @@
 module dboost_test
 {
 
-interface timer_observer
-{
-  oneway void on_timeout();
-};
-
 exception wrong_timeout_exception {};
 
 interface timer
 {
-  // returns -1 if some error happened
-  long add_timer(in long timeout_ms, in timer_observer observer) raises (wrong_timeout_exception);
-  void remove_timer(in timer_observer observer);
+  long add_timer(in long timeout_ms) raises (wrong_timeout_exception);
+  void remove_timer(in long id);
 };
 
 };
