@@ -45,14 +45,6 @@ private:
     static dbus_bool_t add_watch(DBusWatch* watch, void* data);
     static void remove_watch(DBusWatch* watch, void* data);
     static void watch_toggled(DBusWatch* watch, void* data);
-
-//    void register_adaptor(adaptor* a);
-//    void unregister_adaptor(adaptor* a);
-//
-//    void register_object(const std::string& name);
-//    void unregister_object(const std::string& name);
-
-
 };
 
 } // namespace dboost
