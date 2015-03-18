@@ -106,6 +106,13 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             for n in node.contents():
                 n.accept(self)
 
+    def __exceptionCatch(self, exception):
+        r = 'catch (const ' + exception + '& e) { \n'\
+            + '\tdboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_error(m, '\
+            + '"org.dboost.' + exception.replace('::', '.') + '", e.what())));\n'\
+            + '\treturn result;\n}'
+        return r
+
     def visitOperation(self, node):
         self.operations.append(node.identifier())
         node.returnType().accept(self)
@@ -137,9 +144,17 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         call += ', '.join(map(lambda (type, name, is_out): name, paraml))
         call += ')'
 
+        raisel = []
+        if len(node.raises()) > 0:
+            for r in node.raises():
+                ename  = idlutil.ccolonName(r.scopedName())
+                raisel.append(ename)
+
+        raises = '\n'.join(map(self.__exceptionCatch, raisel))
+
         self.st.out(self.templates[self.__class__.__name__]['operation'], operation=node.identifier(), interface=self.interface,
                     params_def=params_def, params_serialize=params_serialize, params_out_serialize=params_out_serialize,
-                    call=call, module_name=self.module_name, class_name=self.class_name)
+                    call=call, module_name=self.module_name, class_name=self.class_name, exception_catch=raises)
 
         self.st.out("""\
 }

@@ -15,6 +15,7 @@ class Header (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.st.out("""#ifndef @ig@
 #define @ig@
 """, ig=ig)
+        self.stdincludes.add('stdexcept')
         self.st.out(
             '\n'.join(map(lambda i: '#include <' + i + '>', self.stdincludes)));
         self.st.out(
@@ -153,8 +154,11 @@ struct @id@;""", id=node.identifier())
 
     def visitException(self, node):
         self.st.out("""\
-class @id@
-{""",
+class @id@ : public std::runtime_error
+{
+public:
+    @id@(const std::string& what): std::runtime_error(what) {}
+""",
                id=node.identifier())
 
         for m in node.members():

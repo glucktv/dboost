@@ -146,6 +146,11 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             for n in node.contents():
                 n.accept(self)
 
+    def __exceptionThrow(self, exception):
+        r = 'if (strcmp("org.dboost.' + exception.replace('::', '.') + '", err.name) == 0) {\n'\
+            '\tthrow ' + exception + '(err.message);\n}'
+        return r
+
     def visitOperation(self, node):
         self.operations.append(node.identifier())
         node.returnType().accept(self)
@@ -172,8 +177,8 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             params_out_serialize += ' '.join(map(lambda (type, name, is_out): '& ' + name, params_out))
         result = '' if rtype == 'void' else 'r'
 
+        raisel = []
         if len(node.raises()) > 0:
-            raisel = []
             for r in node.raises():
                 ename  = idlutil.ccolonName(r.scopedName())
                 raisel.append(ename)
@@ -181,10 +186,11 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
             raises = " throw (" + string.join(raisel, ", ") + ")"
         else:
             raises = ""
+        exceptions_throw = '\n'.join(map(self.__exceptionThrow, raisel))
 
         self.st.out(self.templates[self.__class__.__name__]['operation'], class_name=self.class_name, rtype=rtype, operation=node.identifier(),
                     params=params, params_serialize=params_serialize, params_out_serialize=params_out_serialize,
-                    result=result, raises=raises)
+                    result=result, raises=raises, exceptions_throw=exceptions_throw)
 
     def visitBaseType(self, type):
         self.__result_type = tools.ttsMap[type.kind()]

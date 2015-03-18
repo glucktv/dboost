@@ -132,10 +132,16 @@ dboost::dbus_ptr<DBusMessage> @class_name@::call_@operation@(@module_name@::@int
 
     @params_def@
     @params_serialize@
-    @call@;
-    dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
-    @params_out_serialize@
-    return result;
+    try {
+        @call@;
+        dboost::dbus_ptr<DBusMessage> result(DBOOST_CHECK(dbus_message_new_method_return(m)));
+        @params_out_serialize@
+        return result;
+    }
+    @exception_catch@
+    catch (...) {
+        throw;
+    }
 """
 
 out['ProxyHeader']['head'] = """\
@@ -178,6 +184,7 @@ A& serialize(A& a, @struct@& s)
 
 out['ProxySource']['head'] = """\
 #include <iostream>
+#include <cstring>
 #include <dbus/dbus.h>
 #include <exception.h>
 #include <serializer.h>
@@ -213,7 +220,8 @@ out['ProxySource']['operation'] = """\
 
     // check if there was an error
     DBOOST_CHECK_WITH_ERR(reply, err);
-    if (dbus_message_get_type(reply.get()) == DBUS_MESSAGE_TYPE_ERROR) {
+    if (dbus_error_is_set(&err)) {
+        @exceptions_throw@
         throw dboost::exception(dbus_message_get_error_name(reply.get()));
     }
 
