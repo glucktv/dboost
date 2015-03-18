@@ -42,16 +42,26 @@ server::~server()
     dbus_bus_release_name(m_connection.get(), m_name.c_str(), &err);
 }
 
-void server::register_object(const std::string& name)
+void server::register_object(adaptor* a, const std::string& name)
 {
-    clog << __FUNCTION__ << " name = " << name << endl;
+    assert(a != nullptr);
+    clog << __FUNCTION__ << " object = " << name << endl;
     DBOOST_CHECK(dbus_connection_register_object_path(m_connection.get(), name.c_str(), &s_vtbl, this));
+    m_adaptors[name] = a;
 }
 
-void server::unregister_object(const std::string& name)
+void server::unregister_object(adaptor* a, const std::string& name)
 {
-    clog << __FUNCTION__ << " name = " << name << endl;
-	DBOOST_CHECK(dbus_connection_unregister_object_path(m_connection.get(), name.c_str()));
+    assert(a != nullptr);
+    clog << __FUNCTION__ << " object = " << name << endl;
+    auto iter = m_adaptors.find(name);
+    if (iter == m_adaptors.end()) {
+        cerr << "Trying to unregister inexistent interface " << name << endl;
+    }
+    else {
+        m_adaptors.erase(iter);
+        DBOOST_CHECK(dbus_connection_unregister_object_path(m_connection.get(), name.c_str()));
+    }
 }
 
 void
@@ -59,10 +69,10 @@ server::set_dispatcher(dispatcher* disp)
 {
     DBOOST_CHECK(dbus_connection_set_watch_functions(m_connection.get(),
                                                      &server::add_watch,
-						     &server::remove_watch,
-						     &server::watch_toggled,
-						     disp,
-						     nullptr));
+                                                     &server::remove_watch,
+                                                     &server::watch_toggled,
+                                                     disp,
+                                                     nullptr));
 }
 
 DBusHandlerResult
@@ -78,36 +88,21 @@ DBusHandlerResult
 server::message_func_impl(DBusConnection* connection, DBusMessage* message)
 {
     clog << __FUNCTION__ << endl;
-    auto iter = m_adaptors.find(dbus_message_get_interface(message));
-    if (iter == m_adaptors.end()) {
-    	clog << "Warning: unknown interface " << dbus_message_get_interface(message) << endl;
-    	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+    for (auto iter = m_adaptors.find(dbus_message_get_path(message));
+         iter != m_adaptors.end();
+         iter = m_adaptors.find(dbus_message_get_path(message))) {
+        if (iter->second->handle_message(connection, message) == DBUS_HANDLER_RESULT_HANDLED) {
+            return DBUS_HANDLER_RESULT_HANDLED;
+        }
     }
 
-    return iter->second->handle_message(connection, message);
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 void server::run()
 {
     while (dbus_connection_read_write_dispatch (m_connection.get(), -1));
-}
-
-void server::register_adaptor(adaptor* a, const std::string& ifc_name)
-{
-    clog << __FUNCTION__ << " ifc = " << ifc_name << endl;
-    m_adaptors[ifc_name] = a;
-}
-
-void server::unregister_adaptor(adaptor* /*a*/, const std::string& ifc_name)
-{
-    clog << __FUNCTION__ << " ifc = " << ifc_name << endl;
-    auto iter = m_adaptors.find(ifc_name);
-    if (iter == m_adaptors.end()) {
-        cerr << "Trying to unregister inexistent interface " << ifc_name << endl;
-    }
-    else {
-        m_adaptors.erase(iter);
-    }
 }
 
 dbus_bool_t server::add_watch(DBusWatch* w, void* data)

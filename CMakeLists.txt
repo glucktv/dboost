@@ -24,6 +24,7 @@ function(build_example NAME)
     file(GLOB IDLS ${EX_PATH}/*.idl)
     file(MAKE_DIRECTORY ${DSTPATH})
     set(IFCS "")
+    set(SRCS "")
     foreach(IDL ${IDLS})
       get_filename_component(FILENAME ${IDL} NAME_WE)
       add_custom_command(OUTPUT ${DSTPATH}/${FILENAME}.hpp ${DSTPATH}/${FILENAME}_proxy.hpp ${DSTPATH}/${FILENAME}_adaptor.hpp ${DSTPATH}/${FILENAME}_proxy.cpp ${DSTPATH}/${FILENAME}_adaptor.cpp
@@ -31,14 +32,13 @@ function(build_example NAME)
                          ARGS ${BE_PATH} -bcxxbackend -C${DSTPATH} -K ${IDL}
                          COMMENT "Processing interface '${FILENAME}'")
       list(APPEND IFCS ${DSTPATH}/${FILENAME}.hpp)
+      list(APPEND SRCS ${DSTPATH}/${FILENAME}_proxy.cpp ${DSTPATH}/${FILENAME}_adaptor.cpp)
     endforeach()
     add_custom_target(gen-ifcs-${NAME} ALL DEPENDS ${IFCS})
     
     # automatically generated code 
     set(DES_PATH ./${NAME})
-    add_library(dboost_test_${NAME} STATIC 
-	        ${DSTPATH}/${FILENAME}_proxy.cpp 
-		${DSTPATH}/${FILENAME}_adaptor.cpp)
+    add_library(dboost_test_${NAME} STATIC ${SRCS})
     add_dependencies(dboost_test_${NAME} gen-ifcs-${NAME})
     target_link_libraries(dboost_test_${NAME} dboost)
     
@@ -52,13 +52,14 @@ function(build_example NAME)
     # test lib / client
     set(EXC_SRCS ${EX_PATH}/client.cpp)
     add_executable(${NAME}-client ${EXC_SRCS})
-    target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1 boost_system dboost_test_${NAME})
+    target_link_libraries(${NAME}-client dboost dboost_test_${NAME} dbus-1 boost_system)
     add_dependencies(${NAME}-client dboost dboost_test_${NAME})
     set_property(TARGET dboost_test_${NAME} ${NAME}-server ${NAME}-client 
 	    APPEND PROPERTY INCLUDE_DIRECTORIES ${DSTPATH} ${PROJECT_SOURCE_DIR}/${DES_PATH})
 
 endfunction(build_example)
 
-build_example(01-basic-scenario)
-build_example(05-struct-passing)
+#build_example(01-basic-scenario)
+build_example(04-interface-inheritance)
+#build_example(05-struct-passing)
 #build_example(02-observer)

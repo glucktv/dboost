@@ -21,7 +21,7 @@ class dbus_ptr
 
 public:
     dbus_ptr() noexcept: m_ptr(nullptr) {}
-    dbus_ptr(const dbus_ptr* rhs) noexcept
+    dbus_ptr(const dbus_ptr& rhs) noexcept
         : m_ptr(rhs.m_ptr)
     {
         if (m_ptr) {

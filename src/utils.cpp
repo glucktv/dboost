@@ -19,10 +19,4 @@ dbus_ptr<DBusConnection> create_connection()
     return s;
 }
 
-std::string as_string(int dbus_type)
-{
-    char c = static_cast<int>(dbus_type);
-    return std::string(1, c);
-}
-
 }

@@ -26,11 +26,8 @@ public:
     server(dbus_ptr<DBusConnection> connection, const std::string& name);
     ~server();
 
-    void register_adaptor(adaptor* a, const std::string& ifcname);
-    void unregister_adaptor(adaptor* a, const std::string& ifcname);
-
-    void register_object(const std::string& name);
-    void unregister_object(const std::string& name);
+    void register_object(adaptor* a, const std::string& name);
+    void unregister_object(adaptor* a, const std::string& name);
 
     void run();
     void set_dispatcher(dispatcher* disp);
@@ -48,6 +45,14 @@ private:
     static dbus_bool_t add_watch(DBusWatch* watch, void* data);
     static void remove_watch(DBusWatch* watch, void* data);
     static void watch_toggled(DBusWatch* watch, void* data);
+
+//    void register_adaptor(adaptor* a);
+//    void unregister_adaptor(adaptor* a);
+//
+//    void register_object(const std::string& name);
+//    void unregister_object(const std::string& name);
+
+
 };
 
 } // namespace dboost

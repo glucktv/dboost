@@ -15,7 +15,6 @@ namespace dboost
 {
 
 dbus_ptr<DBusConnection> create_connection();
-std::string as_string(int dbus_type);
 
 }
 
