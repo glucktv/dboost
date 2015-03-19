@@ -71,7 +71,7 @@ namespace @module_name@
 
 
 class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-    def __init__(self, st, interface, suffix, templates):
+    def __init__(self, st, interface, suffix, module_prefix, templates):
         self.st = st
         self.interface = interface
         self.suffix = suffix
@@ -80,6 +80,7 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
         self.operations = []
         self.module_name = ''
+        self.module_prefix = module_prefix
 
     def visitAST(self, node):
         self.st.out(self.templates[self.__class__.__name__]['head'], class_name=self.class_name)
@@ -91,7 +92,8 @@ class AdapterSource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     def visitModule(self, node):
         self.module_name = node.identifier()
         self.st.out(self.templates[self.__class__.__name__]['module_top'],
-                    class_name=self.class_name, suffix=self.suffix, interface=self.interface, module_name=self.module_name)
+                    class_name=self.class_name, suffix=self.suffix, interface=self.interface,
+                    module_name=self.module_name, module_prefix=self.module_prefix)
 
         for n in node.definitions():
             n.accept(self)
@@ -179,6 +181,7 @@ def run(tree, args, templates, suffix):
     ag = tools.Aggregator()
     tree.accept(ag)
     interfaces = ag.getInterfaces()
+    module_prefix = ag.getModulePrefix()
 
     for interface in interfaces:
         with open(interface + '_' + suffix + '.hpp', 'w') as header:
@@ -191,5 +194,5 @@ def run(tree, args, templates, suffix):
         with open(interface + '_' + suffix + '.cpp', 'w') as source:
             st = output.Stream(source, 2)
 
-            cv = AdapterSource(st, interface, suffix, templates)
+            cv = AdapterSource(st, interface, suffix, module_prefix, templates)
             tree.accept(cv)

@@ -1,3 +1,4 @@
+#pragma module_prefix "io.dboost"
 module dboost_test
 {
 
@@ -5,6 +6,7 @@ interface timer
 {
   // returns -1 if some error happened, otherwise - timer id
   long add_timer(in long timeout_ms);
+#pragma operation_timeout 10000
   void remove_timer(in long timer_id);
 };
 

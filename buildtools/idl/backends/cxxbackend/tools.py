@@ -24,6 +24,7 @@ class Aggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.interfaces = set([])
         self.includes = set([])
         self.stdincludes = set([])
+        self.moduleprefix = "org.dboost"
 
     def getIncludes(self):
         return (self.includes, self.stdincludes)
@@ -31,8 +32,15 @@ class Aggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         return self.structs
     def getInterfaces(self):
         return self.interfaces
+    def getModulePrefix(self):
+        return self.moduleprefix
 
     def visitAST(self, node):
+        for p in node.pragmas():
+            key, value = p.text().split()
+            if key == 'module_prefix':
+                self.moduleprefix = value[1:-1]
+                break
         for d in node.declarations():
             if not d.mainFile():
                 self.includes.add(d.file())

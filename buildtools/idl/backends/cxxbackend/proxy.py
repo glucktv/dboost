@@ -114,7 +114,7 @@ namespace @id@
 
 
 class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-    def __init__(self, st, interface, suffix, templates):
+    def __init__(self, st, interface, suffix, module_prefix, templates):
         self.st = st
         self.interface = interface
         self.suffix = suffix
@@ -123,6 +123,7 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
         self.operations = []
         self.module_name = ''
+        self.module_prefix = module_prefix
 
     def visitAST(self, node):
         self.st.out(self.templates[self.__class__.__name__]['head'], class_name=self.class_name)
@@ -134,7 +135,8 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
     def visitModule(self, node):
         self.module_name = node.identifier()
         self.st.out(self.templates[self.__class__.__name__]['module'],
-                    class_name=self.class_name, suffix=self.suffix, interface=self.interface, module_name=self.module_name)
+                    class_name=self.class_name, suffix=self.suffix, interface=self.interface,
+                    module_name=self.module_name, module_prefix=self.module_prefix)
 
         for n in node.definitions():
             n.accept(self)
@@ -152,6 +154,13 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         return r
 
     def visitOperation(self, node):
+        timeout = 'TIMEOUT_MS'
+        for p in node.pragmas():
+            key, value = p.text().split(' ')
+            if key == 'operation_timeout':
+                timeout = value
+                break
+
         self.operations.append(node.identifier())
         node.returnType().accept(self)
         rtype = self.__result_type
@@ -190,7 +199,7 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
         self.st.out(self.templates[self.__class__.__name__]['operation'], class_name=self.class_name, rtype=rtype, operation=node.identifier(),
                     params=params, params_serialize=params_serialize, params_out_serialize=params_out_serialize,
-                    result=result, raises=raises, exceptions_throw=exceptions_throw)
+                    result=result, raises=raises, exceptions_throw=exceptions_throw, timeout=timeout)
 
     def visitBaseType(self, type):
         self.__result_type = tools.ttsMap[type.kind()]
@@ -211,6 +220,7 @@ def run(tree, args, templates, suffix):
     ag = tools.Aggregator()
     tree.accept(ag)
     interfaces = ag.getInterfaces()
+    module_prefix = ag.getModulePrefix()
 
     for interface in interfaces:
         with open(interface + '_' + suffix + '.hpp', 'w') as header:
@@ -223,5 +233,5 @@ def run(tree, args, templates, suffix):
         with open(interface + '_' + suffix + '.cpp', 'w') as source:
             st = output.Stream(source, 2)
 
-            cv = ProxySource(st, interface, suffix, templates)
+            cv = ProxySource(st, interface, suffix, module_prefix, templates)
             tree.accept(cv)

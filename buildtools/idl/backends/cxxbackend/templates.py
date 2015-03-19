@@ -48,7 +48,7 @@ out['AdapterSource']['head'] = """\
 out['AdapterSource']['module_top'] = """\
 namespace @module_name@
 {
-const char* @class_name@::INTERFACE_NAME = "org.dboost.@interface@";
+const char* @class_name@::INTERFACE_NAME = "@module_prefix@.@interface@";
 
 @class_name@::@class_name@(dboost::server& s)
     : m_server(s)
@@ -195,7 +195,7 @@ out['ProxySource']['module'] = """\
 namespace @module_name@
 {
 
-const char* @class_name@::s_ifc_name = "org.dboost.@interface@";
+const char* @class_name@::s_ifc_name = "@module_prefix@.@interface@";
 const int TIMEOUT_MS = 5000;
 
 @class_name@::@class_name@(dboost::dbus_ptr<DBusConnection> conn,
@@ -216,7 +216,7 @@ out['ProxySource']['operation'] = """\
 
     // call synchronously
     dboost::error err;
-    dboost::dbus_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_connection.get(), msg.get(), TIMEOUT_MS, &err));
+    dboost::dbus_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_connection.get(), msg.get(), @timeout@, &err));
 
     // check if there was an error
     if (dbus_error_is_set(&err)) {
