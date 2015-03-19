@@ -140,7 +140,7 @@ dboost::dbus_ptr<DBusMessage> @class_name@::call_@operation@(@module_name@::@int
     }
     @exception_catch@
     catch (...) {
-        throw;
+        return dboost::dbus_ptr<DBusMessage>();
     }
 """
 
@@ -219,7 +219,6 @@ out['ProxySource']['operation'] = """\
     dboost::dbus_ptr<DBusMessage> reply(dbus_connection_send_with_reply_and_block(m_connection.get(), msg.get(), TIMEOUT_MS, &err));
 
     // check if there was an error
-    DBOOST_CHECK_WITH_ERR(reply, err);
     if (dbus_error_is_set(&err)) {
         @exceptions_throw@
         throw dboost::exception(dbus_message_get_error_name(reply.get()));
