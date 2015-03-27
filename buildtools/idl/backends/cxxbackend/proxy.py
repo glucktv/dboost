@@ -114,7 +114,7 @@ namespace @id@
 
 
 class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
-    def __init__(self, st, interface, suffix, module_prefix, templates):
+    def __init__(self, st, interface, suffix, module_prefix, pragmas, templates):
         self.st = st
         self.interface = interface
         self.suffix = suffix
@@ -124,6 +124,7 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.operations = []
         self.module_name = ''
         self.module_prefix = module_prefix
+        self.pragmas = pragmas
 
     def visitAST(self, node):
         self.st.out(self.templates[self.__class__.__name__]['head'], class_name=self.class_name)
@@ -134,9 +135,10 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
     def visitModule(self, node):
         self.module_name = node.identifier()
+        default_timeout = self.pragmas['default_timeout'] if 'default_timeout' in self.pragmas else '5000'
         self.st.out(self.templates[self.__class__.__name__]['module'],
                     class_name=self.class_name, suffix=self.suffix, interface=self.interface,
-                    module_name=self.module_name, module_prefix=self.module_prefix)
+                    module_name=self.module_name, module_prefix=self.module_prefix, default_timeout=default_timeout)
 
         for n in node.definitions():
             n.accept(self)
@@ -155,9 +157,12 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
 
     def visitOperation(self, node):
         timeout = 'TIMEOUT_MS'
-        for p in node.pragmas():
-            key, value = p.text().split(' ')
-            if key == 'operation_timeout':
+        for p in node.comments():
+            text = p.text()[2:].strip()
+            if not text.startswith('@@'):
+                continue
+            key, value = text.split(' ')
+            if key == '@@operation_timeout':
                 timeout = value
                 break
 
@@ -189,7 +194,7 @@ class ProxySource (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         raisel = []
         if len(node.raises()) > 0:
             for r in node.raises():
-                ename  = idlutil.ccolonName(r.scopedName())
+                ename = idlutil.ccolonName(r.scopedName())
                 raisel.append(ename)
 
             raises = " throw (" + string.join(raisel, ", ") + ")"
@@ -221,6 +226,7 @@ def run(tree, args, templates, suffix):
     tree.accept(ag)
     interfaces = ag.getInterfaces()
     module_prefix = ag.getModulePrefix()
+    pragmas = ag.getPragmas()
 
     for interface in interfaces:
         with open(interface + '_' + suffix + '.hpp', 'w') as header:
@@ -233,5 +239,5 @@ def run(tree, args, templates, suffix):
         with open(interface + '_' + suffix + '.cpp', 'w') as source:
             st = output.Stream(source, 2)
 
-            cv = ProxySource(st, interface, suffix, module_prefix, templates)
+            cv = ProxySource(st, interface, suffix, module_prefix, pragmas, templates)
             tree.accept(cv)

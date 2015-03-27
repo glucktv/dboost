@@ -25,6 +25,7 @@ class Aggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         self.includes = set([])
         self.stdincludes = set([])
         self.moduleprefix = "org.dboost"
+        self.pragmas = {}
 
     def getIncludes(self):
         return (self.includes, self.stdincludes)
@@ -34,13 +35,15 @@ class Aggregator (idlvisitor.AstVisitor, idlvisitor.TypeVisitor):
         return self.interfaces
     def getModulePrefix(self):
         return self.moduleprefix
+    def getPragmas(self):
+        return self.pragmas
 
     def visitAST(self, node):
         for p in node.pragmas():
             key, value = p.text().split()
             if key == 'module_prefix':
                 self.moduleprefix = value[1:-1]
-                break
+            self.pragmas[key] = value
         for d in node.declarations():
             if not d.mainFile():
                 self.includes.add(d.file())

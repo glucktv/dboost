@@ -196,7 +196,7 @@ namespace @module_name@
 {
 
 const char* @class_name@::s_ifc_name = "@module_prefix@.@interface@";
-const int TIMEOUT_MS = 5000;
+const int TIMEOUT_MS = @default_timeout@;
 
 @class_name@::@class_name@(dboost::dbus_ptr<DBusConnection> conn,
                         const std::string& bus_name, const std::string& obj_name)
